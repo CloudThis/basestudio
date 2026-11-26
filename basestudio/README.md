@@ -42,6 +42,10 @@ Quand une nouvelle version est publiée, un bouton **⬆ Mise à jour** apparaî
   - Insérer une ligne, renommer, copier, vider ou supprimer la table.
 - **SQL** : un éditeur avec les couleurs, les numéros de ligne et l'**auto-complétion** (tables, colonnes, alias `c.`, fonctions, mots-clés : ↑ ↓ pour choisir, Entrée ou Tab pour valider, Ctrl+Espace pour ouvrir la liste). **Ctrl+Entrée** exécute, plusieurs requêtes passent d'un coup, il y a un historique et des modèles prêts (CREATE TABLE, JOIN, FOREIGN KEY…).
 - **👤 Utilisateurs** (menu du haut) : les comptes MySQL et leurs droits (voir plus bas).
+- **Onglets et favoris SQL** : dans l'éditeur SQL, **＋** ouvre un nouvel onglet (double-clic sur un onglet pour le renommer). Les onglets sont gardés même après avoir fermé BaseStudio. **⭐ Favori** enregistre la requête avec un nom : tu la retrouves dans la colonne de droite et dans **Ctrl+K**.
+- **📊 Graphique** : sous chaque résultat (éditeur SQL, requête visuelle), en barres, courbe ou camembert, avec export PNG / SVG. Astuce : `SELECT ville, COUNT(*) FROM client GROUP BY ville`.
+- **✏ Formulaire d'une ligne** (onglet Parcourir) : le crayon au début de chaque ligne ouvre toutes les colonnes l'une sous l'autre (listes pour les ENUM et les clés étrangères). Enregistrer, ‹ › ligne précédente / suivante, ⧉ Dupliquer, 🗑 Supprimer.
+- **💾 Sauvegardes** et **📊 État du serveur** (menu du haut) : voir plus bas.
 - **Journal SQL** (bouton 📜 en bas à gauche) : toutes les requêtes que l'appli a envoyées. Clique sur une ligne pour la rouvrir dans l'éditeur.
 
 ## Le schéma MERISE (onglet 🔗 Schéma d'une base)
@@ -109,6 +113,32 @@ Les commentaires des colonnes (Structure → Modifier) remplissent la colonne «
 - Les mots de passe ne sont jamais écrits dans le journal SQL (`••••••••`).
 - Attention : avec XAMPP, phpMyAdmin se connecte en `root` sans mot de passe. Si tu en mets un à `root`, change-le aussi dans `C:\xampp\phpMyAdmin\config.inc.php`.
 
+## La requête visuelle (onglet 🎛 Requête visuelle d'une base)
+
+Pour écrire un SELECT sans taper de SQL :
+
+1. Coche les **tables** (celles reliées par une clé étrangère sont marquées 🔗) : les `JOIN` sont écrits tout seuls.
+2. Coche les **colonnes** à afficher. Une colonne peut être comptée, additionnée, moyennée… (COUNT, SUM, AVG, MIN, MAX) : le `GROUP BY` est ajouté automatiquement.
+3. Ajoute des **filtres** (=, ≠, >, contient, commence par, est dans la liste, est vide…), avec ET ou OU.
+4. Choisis le **tri**, sans doublons (DISTINCT), INNER ou LEFT JOIN, le nombre maximum de lignes.
+
+Le SQL s'affiche en direct : **▶ Exécuter**, **📊 Graphique** sur le résultat, ou **⌨️ Ouvrir dans l'éditeur SQL** pour le retoucher.
+
+## Comparer deux bases (onglet ⚖ Comparer d'une base)
+
+Choisis une autre base du serveur : BaseStudio liste les tables qui manquent d'un côté ou de l'autre, les colonnes et index différents, et peut aussi compter les lignes. **🛠 Rendre B identique à A** écrit le script `ALTER TABLE` / `CREATE TABLE` (structure seulement, les lignes restent), à exécuter tout de suite ou à ouvrir dans l'éditeur SQL. Coche « supprimer aussi ce qui est en trop » pour enlever les tables, colonnes et index que A n'a pas.
+
+## Les sauvegardes (💾 Sauvegardes, menu du haut ou onglet d'une base)
+
+- **💾 Sauvegarder maintenant** : un fichier `.sql.gz` (compressé) de toute la base : tables, données, vues, procédures, triggers.
+- **Sauvegarde automatique** : à chaque lancement, chaque jour ou chaque semaine, et le nombre de sauvegardes à garder (les plus vieilles sont supprimées). Elle se fait tant que BaseStudio est ouvert ; si le PC était éteint, elle est faite au lancement suivant.
+- **↩ Restaurer** remet la base comme dans la sauvegarde (BaseStudio sauvegarde d'abord l'état actuel, au cas où). **⬇ Télécharger .sql**, **🗑** supprimer.
+- Les fichiers sont dans `Documents\BaseStudio\Sauvegardes` (bouton **📂 Ouvrir le dossier**), hors du dossier web : personne ne peut les télécharger depuis le navigateur.
+
+## L'état du serveur (📊 État, menu du haut)
+
+Actualisé toutes les 3 secondes : depuis quand MySQL tourne, connexions, **requêtes par seconde** (avec une courbe), trafic, requêtes lentes, cache InnoDB. Plus bas : les **requêtes en cours** (bouton ⏹ Arrêter pour en couper une qui bloque), la place prise par chaque base et les réglages importants du serveur.
+
 ## L'apparence (bouton 🎨)
 
 - 9 thèmes prêts : Corail (par défaut), Violet nuit, Jour, Océan, Forêt, Sakura, Terminal, Coucher de soleil, Graphite.
@@ -144,6 +174,14 @@ Les commentaires des colonnes (Structure → Modifier) remplissent la colonne «
 | `csv.js` | L'import CSV dans une table. |
 | `search.js` | La recherche dans toute une base. |
 | `users.js` | Les utilisateurs MySQL et leurs droits. |
+| `charts.js` | Les graphiques (barres, courbe, camembert). |
+| `rowform.js` | Le formulaire d'édition d'une ligne (onglet Parcourir). |
+| `sqltabs.js` | Les onglets et favoris de l'éditeur SQL. |
+| `builder.js` | La requête visuelle. |
+| `compare.js` | La comparaison de deux bases. |
+| `backups.js` | Les sauvegardes (manuelles et automatiques). |
+| `status.js` | L'état du serveur. |
+
 Tu peux modifier ces fichiers directement dans `C:\xampp\htdocs\basestudio\`, puis recharger la page (F5). Pour ajouter un thème prêt, ajoute une entrée dans `PRESETS` au début de `theme.js`. Attention : une mise à jour remplace ces fichiers (ta version est gardée dans `_sauvegarde\`).
 
 `INSTALLER.bat` et `_installer.ps1` ont servi à l'installation : tu peux les supprimer, ou les garder pour recréer le raccourci.

@@ -194,6 +194,15 @@
     updateBackup: () => call('update_backup'),
     updateRollback: () => call('update_rollback'),
 
+    // sauvegardes (voir backups.js)
+    backupList: () => call('backup_list'),
+    backupRun: (database, auto, keep) => call('backup_run', { database, auto: !!auto, keep: keep || 7 }),
+    backupGet: file => call('backup_get', { file }),
+    backupDelete: file => call('backup_delete', { file }),
+    backupConfig: config => call('backup_config', { config }),
+    backupOpen: () => call('backup_open'),
+    download,
+
     saveFile: async (name, content) => ({ ok: true, data: 'Téléchargements\\' + download(name, content) }),
     openFile: async () => ({ ok: true, data: null })
   };

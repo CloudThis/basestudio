@@ -376,6 +376,10 @@ const TABS = {
   db: [['tables', '▦ Tables'], ['sql', '⌨️ SQL'], ['create', '＋ Nouvelle table'], ['export', '⬇ Exporter'], ['import', '📥 Importer'], ['ops', '⚙ Opérations']],
   table: [['browse', '👀 Parcourir'], ['structure', '🧱 Structure'], ['sql', '⌨️ SQL'], ['insert', '＋ Insérer'], ['export', '⬇ Exporter'], ['ops', '⚙ Opérations']]
 };
+// titres des onglets du serveur ajoutés par d'autres fichiers : { id: [icône, titre] }
+const SERVER_TITLES = {};
+// fonctions qui ajoutent des lignes dans Ctrl+K : fn(items, match, texteTapé)
+const PALETTE_HOOKS = [];
 const level = () => state.table ? 'table' : state.db ? 'db' : 'server';
 const tableType = () => ((state.tables[state.db] || []).find(t => t.name === state.table) || {}).type || 'BASE TABLE';
 
@@ -410,6 +414,8 @@ function render() {
   if (lvl === 'server') {
     title = { home: 'Salut 👋', sql: 'Éditeur SQL', import: 'Importer un fichier SQL', users: 'Utilisateurs et droits' }[state.tab];
     ico = { home: '🗄️', sql: '⌨️', import: '📥', users: '👤' }[state.tab];
+    const extra = SERVER_TITLES[state.tab];
+    if (extra) { ico = extra[0]; title = extra[1]; }
   } else if (lvl === 'db') { title = state.db; ico = initial(state.db); }
   else { title = state.table; ico = tableType() === 'VIEW' ? '👁' : '▦'; }
   $('#page-title').innerHTML = '<span class="title-ico">' + ico + '</span><span>' + h(title) + '</span>';
@@ -719,6 +725,8 @@ VIEWS['table:browse'] = async view => {
     return { sql: sql + (pk.length ? '' : ' LIMIT 1'), vals };
   };
 
+  view.browse = { result, cols, pk, whereRow, isView };
+
   // suppression d'une ligne
   $$('[data-del]', view).forEach(btn => btn.onclick = async () => {
     const r = result.rows[btn.dataset.del];
@@ -1013,6 +1021,7 @@ VIEWS['sql'] = async view => {
         : '<div class="alert success result-block">✔ Requête ' + (data.results.length > 1 ? (i + 1) + ' ' : '') + 'exécutée · ' + fmtNum(r.affectedRows) + ' ligne(s) affectée(s)' +
           (r.insertId ? ' · id inséré : ' + r.insertId : '') + ' · ' + data.time + ' ms</div>').join('');
       $$('[data-csv]', out).forEach(b => b.onclick = () => saveText('resultat.csv', toCsv(data.results[b.dataset.csv]), 'csv'));
+      if (window.Charts) Charts.decorate(out, data.results);
 
       // si la structure a changé, on met à jour la barre latérale
       if (/\b(create|drop|alter|rename|truncate)\b/i.test(sql)) {
@@ -1242,6 +1251,7 @@ function drawPalette(keepScroll) {
         items.push({ group: 'Actions', ico, label: label + (tab === 'search' ? ' « ' : ' de « ') + db + ' »', sub: 'onglet', run: () => go(db, null, tab) });
     });
   }
+  PALETTE_HOOKS.forEach(fn => { try { fn(items, match, f); } catch (e) {} });
   // bases
   state.dbs.forEach(db => {
     if (match(db)) items.push({ group: 'Bases', ico: initial(db), color: dbColor(db), label: db, sub: SYSTEM_DBS.includes(db) ? 'système' : 'base', run: () => go(db, null) });

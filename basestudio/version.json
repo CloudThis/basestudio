@@ -1,26 +1,47 @@
 {
-    "version":  "1.0.2",
+    "version":  "1.1.0",
     "date":  "2026-11-26",
     "notes":  [
-                  "Fenêtre Quoi de neuf : les nouveautés s\u0027affichent après chaque mise à jour (clic sur le numéro de version pour les revoir)",
-                  "Revenir à la version précédente en un clic si une mise à jour pose problème"
+                  "Sauvegardes automatiques (chaque lancement, jour ou semaine) et restauration en un clic",
+                  "Comparer deux bases et les rendre identiques",
+                  "Requête visuelle : construire un SELECT sans taper de SQL",
+                  "Graphiques (barres, courbe, camembert) sous chaque résultat",
+                  "Onglets et favoris dans l\u0027éditeur SQL",
+                  "Formulaire pour modifier une ligne (onglet Parcourir)",
+                  "État du serveur en direct (connexions, requêtes en cours)"
               ],
     "files":  [
                   {
                       "path":  "api.php",
-                      "sha256":  "faaaeb8051cac50d886da9d0e2f701a4b661b0de0e012ba8a9e976c878fa514d"
+                      "sha256":  "4162990d2eb33bb03a80debce0211ac75ecf9ce8d0861a8e6a121cd5fa756455"
                   },
                   {
                       "path":  "api-web.js",
-                      "sha256":  "8aa61dacb40583339ea4638b092bde1004c9ce118ede5644023dc026f543e7bf"
+                      "sha256":  "40f19185bdba3f75370dd6cb43a447e4d881a7fc1120b0a06a8559b8981edfdd"
                   },
                   {
                       "path":  "app.js",
-                      "sha256":  "ef50e4d91487d39a445bef494a9e31a36169b769af815a3484d2f6ee9610352c"
+                      "sha256":  "3d6b05e959eb2132df7f5321fa07fc4de651714f5516b6feb43a31ccb830d6f6"
+                  },
+                  {
+                      "path":  "backups.js",
+                      "sha256":  "561fb7232070c2f4c371c0a6a7035fc3bda82e95fab687f65fc6a5352b2fd200"
                   },
                   {
                       "path":  "basestudio.ico",
                       "sha256":  "48c8b152a42c50877a24647628e579c0260becb726d16fb6d834bbc71cb80180"
+                  },
+                  {
+                      "path":  "builder.js",
+                      "sha256":  "8cacec62087bf2d237fe8a07372fd53213afac4d75939c4e15e6600d14925ccb"
+                  },
+                  {
+                      "path":  "charts.js",
+                      "sha256":  "c66be13f2f20d03b7bddc86f28b7573d7564009feb2e0aa3165e35f3f5442956"
+                  },
+                  {
+                      "path":  "compare.js",
+                      "sha256":  "2178553388951720f2ffc44b739609500215943260e69515362d8c91ad5de0d8"
                   },
                   {
                       "path":  "complete.js",
@@ -36,7 +57,7 @@
                   },
                   {
                       "path":  "index.html",
-                      "sha256":  "9350942e4eff7280cd7e99d81add1c50697a60bd3b9f4254e99aba1de3f5ebec"
+                      "sha256":  "b48f5eedb06ae2e6f8cf4e41de8da3e0f1afcb47eddd387063066b2e15f717da"
                   },
                   {
                       "path":  "index.php",
@@ -56,11 +77,15 @@
                   },
                   {
                       "path":  "README.md",
-                      "sha256":  "cdff6569bedc94be4578b46f1d4027dd068782c9b8a33c187acc9c26810b8b12"
+                      "sha256":  "87ff8352ce4585bfd021a7c9f47aca6f339c28cfa0cc971140f7853412eb996c"
                   },
                   {
                       "path":  "relations.js",
                       "sha256":  "d14f34a80f0258250bb9f60a3f5d56df04ea7d8d23b04e8dcf721f6da97a9056"
+                  },
+                  {
+                      "path":  "rowform.js",
+                      "sha256":  "3014f67da6fc714ebafe9ff319bb37184af3dbb87343e1802200603f0e3edf36"
                   },
                   {
                       "path":  "schema.js",
@@ -71,8 +96,16 @@
                       "sha256":  "ff8ff7c9994dddfdfab6e14b2013b26a9cf6cc1a603cfeea964e12132cd8d78a"
                   },
                   {
+                      "path":  "sqltabs.js",
+                      "sha256":  "3a0c8d478b82a94c7c29bf12b29fc986311632cd99343f775bde7025c657827f"
+                  },
+                  {
+                      "path":  "status.js",
+                      "sha256":  "b5949ca9938cec611549e5f861f047f852d0896007f3520253f44d85b920d8aa"
+                  },
+                  {
                       "path":  "style.css",
-                      "sha256":  "93b9bdb7d41d107c788e72b44cf9b573ecfb1fb4d4b4772adf5dff392fa925e2"
+                      "sha256":  "9248c796cc6c3f052534bd78b79bc60a9725b23ea339a453f4a9e9cfb412bf45"
                   },
                   {
                       "path":  "theme.js",

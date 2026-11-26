@@ -181,6 +181,111 @@ function local_version() {
 }
 function valid_ref($ref) { return $ref === 'main' || preg_match('/^[0-9a-f]{40}$/', $ref); }
 
+// Export SQL d'une base (ou d'une seule table) : structure, données, vues, procédures, triggers
+function dump_db($c, $db, $only, $withData) {
+    $out = ["-- Export BaseStudio", "-- Base : $db", "-- Date : " . date('d/m/Y H:i:s'), "",
+            "SET NAMES utf8mb4;", "SET FOREIGN_KEY_CHECKS = 0;", ""];
+    if (!$only) { $out[] = "CREATE DATABASE IF NOT EXISTS " . esc_id($db) . ";"; $out[] = "USE " . esc_id($db) . ";"; $out[] = ""; }
+    $c->select_db($db);
+    foreach (rows_of($c, 'SHOW FULL TABLES') as [$name, $kind]) {
+        if ($only && $name !== $only) continue;
+        if ($kind === 'VIEW') {
+            $cv = rows_of($c, 'SHOW CREATE VIEW ' . esc_id($name));
+            $out[] = "-- Vue `$name`"; $out[] = "DROP VIEW IF EXISTS " . esc_id($name) . ";"; $out[] = $cv[0][1] . ";"; $out[] = "";
+            continue;
+        }
+        $ct = rows_of($c, 'SHOW CREATE TABLE ' . esc_id($name));
+        $out[] = "-- --------------------------------------------------";
+        $out[] = "-- Table `$name`";
+        $out[] = "-- --------------------------------------------------";
+        $out[] = "DROP TABLE IF EXISTS " . esc_id($name) . ";";
+        $out[] = $ct[0][1] . ";"; $out[] = "";
+        if ($withData) {
+            $res = $c->query('SELECT * FROM ' . esc_id($name));
+            $batch = [];
+            while ($r = $res->fetch_row()) {
+                $batch[] = '(' . implode(', ', array_map(fn($v) => esc_val($c, $v), $r)) . ')';
+                if (count($batch) === 100) { $out[] = "INSERT INTO " . esc_id($name) . " VALUES\n" . implode(",\n", $batch) . ";"; $batch = []; }
+            }
+            if ($batch) $out[] = "INSERT INTO " . esc_id($name) . " VALUES\n" . implode(",\n", $batch) . ";";
+            $res->free();
+            $out[] = "";
+        }
+    }
+    // Procédures et fonctions (seulement pour l'export d'une base entière)
+    $trg = [];
+    if (!$only) {
+        foreach (['PROCEDURE', 'FUNCTION'] as $kind) {
+            foreach (rows_of($c, "SHOW $kind STATUS WHERE Db = " . esc_val($c, $db)) as $r) {
+                $cr = rows_of($c, "SHOW CREATE $kind " . esc_id($r[1]));
+                if (empty($cr[0][2])) continue;   // code non lisible (pas les droits)
+                $trg[] = "DROP $kind IF EXISTS " . esc_id($r[1]) . " //";
+                $trg[] = preg_replace('/\sDEFINER=`[^`]*`@`[^`]*`/', '', $cr[0][2]) . " //";
+                $trg[] = "";
+            }
+        }
+    }
+    // Triggers (écrits avec DELIMITER, comme phpMyAdmin)
+    foreach (rows_of($c, 'SHOW TRIGGERS') as $t) {
+        if ($only && $t[2] !== $only) continue;
+        $ct = rows_of($c, 'SHOW CREATE TRIGGER ' . esc_id($t[0]));
+        $trg[] = "DROP TRIGGER IF EXISTS " . esc_id($t[0]) . " //";
+        $trg[] = preg_replace('/\sDEFINER=`[^`]*`@`[^`]*`/', '', $ct[0][2]) . " //";
+        $trg[] = "";
+    }
+    if ($trg) {
+        $out[] = "-- --------------------------------------------------";
+        $out[] = "-- Procédures, fonctions et triggers";
+        $out[] = "-- --------------------------------------------------";
+        $out[] = "DELIMITER //";
+        array_push($out, ...$trg);
+        $out[] = "DELIMITER ;";
+        $out[] = "";
+    }
+    $out[] = "SET FOREIGN_KEY_CHECKS = 1;";
+    return implode("\n", $out);
+}
+
+// ---------------------------------------------------------------------
+//  Sauvegardes : fichiers .sql.gz rangés HORS du dossier web
+//  (Documents\BaseStudio\Sauvegardes, sinon C:\xampp\basestudio-sauvegardes)
+//  Nom d'un fichier : <base encodée>__AAAA-MM-JJ_HH-MM-SS.sql.gz
+// ---------------------------------------------------------------------
+function backup_dir() {
+    $home = getenv('USERPROFILE');
+    $dir = ($home && is_dir($home . '\\Documents')) ? $home . '\\Documents\\BaseStudio\\Sauvegardes' : dirname(__DIR__, 2) . '\\basestudio-sauvegardes';
+    if (!is_dir($dir) && !@mkdir($dir, 0700, true)) fail('Impossible de créer le dossier des sauvegardes : ' . $dir);
+    return $dir;
+}
+function backup_file($name) {
+    if (!is_string($name) || !preg_match('/^[A-Za-z0-9%._-]+__\d{4}-\d\d-\d\d_\d\d-\d\d-\d\d(_auto)?\.sql\.gz$/', $name)) fail('Nom de sauvegarde invalide');
+    $f = backup_dir() . '\\' . $name;
+    if (!is_file($f)) fail('Cette sauvegarde n\'existe plus');
+    return $f;
+}
+function backup_list() {
+    $out = [];
+    foreach (glob(backup_dir() . '\\*.sql.gz') ?: [] as $f) {
+        $n = basename($f);
+        if (!preg_match('/^(.+)__(\d{4})-(\d\d)-(\d\d)_(\d\d)-(\d\d)-(\d\d)(_auto)?\.sql\.gz$/', $n, $m)) continue;
+        $out[] = ['file' => $n, 'db' => rawurldecode($m[1]), 'date' => "$m[2]-$m[3]-$m[4]T$m[5]:$m[6]:$m[7]", 'auto' => !empty($m[8]), 'size' => filesize($f)];
+    }
+    usort($out, fn($a, $b) => strcmp($b['date'], $a['date']));
+    return $out;
+}
+function backup_config_path() { return backup_dir() . '\\reglages.json'; }
+function backup_config() {
+    $j = @json_decode(@file_get_contents(backup_config_path()), true);
+    return is_array($j) ? $j : ['dbs' => new stdClass()];
+}
+// garde les $keep sauvegardes automatiques les plus récentes d'une base
+function backup_prune($db, $keep) {
+    if ($keep < 1) return;
+    $auto = array_values(array_filter(backup_list(), fn($b) => $b['db'] === $db && $b['auto']));
+    foreach (array_slice($auto, $keep) as $b) @unlink(backup_dir() . '\\' . $b['file']);
+}
+
+
 // ---------------------------------------------------------------------
 //  Les actions
 // ---------------------------------------------------------------------
@@ -296,70 +401,49 @@ try {
 
         case 'export': {
             $c = db();
-            $db = $in['database'];
-            $only = $in['table'] ?? null;
-            $withData = ($in['withData'] ?? true) !== false;
-            $out = ["-- Export BaseStudio", "-- Base : $db", "-- Date : " . date('d/m/Y H:i:s'), "",
-                    "SET NAMES utf8mb4;", "SET FOREIGN_KEY_CHECKS = 0;", ""];
-            if (!$only) { $out[] = "CREATE DATABASE IF NOT EXISTS " . esc_id($db) . ";"; $out[] = "USE " . esc_id($db) . ";"; $out[] = ""; }
-            $c->select_db($db);
-            foreach (rows_of($c, 'SHOW FULL TABLES') as [$name, $kind]) {
-                if ($only && $name !== $only) continue;
-                if ($kind === 'VIEW') {
-                    $cv = rows_of($c, 'SHOW CREATE VIEW ' . esc_id($name));
-                    $out[] = "-- Vue `$name`"; $out[] = "DROP VIEW IF EXISTS " . esc_id($name) . ";"; $out[] = $cv[0][1] . ";"; $out[] = "";
-                    continue;
-                }
-                $ct = rows_of($c, 'SHOW CREATE TABLE ' . esc_id($name));
-                $out[] = "-- --------------------------------------------------";
-                $out[] = "-- Table `$name`";
-                $out[] = "-- --------------------------------------------------";
-                $out[] = "DROP TABLE IF EXISTS " . esc_id($name) . ";";
-                $out[] = $ct[0][1] . ";"; $out[] = "";
-                if ($withData) {
-                    $res = $c->query('SELECT * FROM ' . esc_id($name));
-                    $batch = [];
-                    while ($r = $res->fetch_row()) {
-                        $batch[] = '(' . implode(', ', array_map(fn($v) => esc_val($c, $v), $r)) . ')';
-                        if (count($batch) === 100) { $out[] = "INSERT INTO " . esc_id($name) . " VALUES\n" . implode(",\n", $batch) . ";"; $batch = []; }
-                    }
-                    if ($batch) $out[] = "INSERT INTO " . esc_id($name) . " VALUES\n" . implode(",\n", $batch) . ";";
-                    $res->free();
-                    $out[] = "";
-                }
+            reply(dump_db($c, $in['database'], $in['table'] ?? null, ($in['withData'] ?? true) !== false));
+        }
+
+        // ---------- sauvegardes ----------
+        case 'backup_list': {
+            reply(['dir' => backup_dir(), 'list' => backup_list(), 'config' => backup_config()]);
+        }
+        case 'backup_run': {
+            $c = db();
+            $db = (string)($in['database'] ?? '');
+            if ($db === '') fail('Base manquante');
+            $auto = !empty($in['auto']);
+            $sql = dump_db($c, $db, null, true);
+            $name = rawurlencode($db) . '__' . date('Y-m-d_H-i-s') . ($auto ? '_auto' : '') . '.sql.gz';
+            $name = str_replace(['~', '+'], ['%7E', '%2B'], $name);
+            if (file_put_contents(backup_dir() . '\\' . $name, gzencode($sql, 6)) === false) fail('Impossible d\'écrire la sauvegarde');
+            if ($auto) backup_prune($db, (int)($in['keep'] ?? 7));
+            reply(['file' => $name, 'size' => filesize(backup_dir() . '\\' . $name)]);
+        }
+        case 'backup_get': {
+            $sql = gzdecode(file_get_contents(backup_file($in['file'] ?? '')));
+            if ($sql === false) fail('Sauvegarde abîmée (impossible de la décompresser)');
+            reply($sql);
+        }
+        case 'backup_delete': {
+            if (!@unlink(backup_file($in['file'] ?? ''))) fail('Impossible de supprimer la sauvegarde');
+            reply(true);
+        }
+        case 'backup_config': {
+            $cfg = $in['config'] ?? null;
+            if (!is_array($cfg) || !isset($cfg['dbs']) || !is_array($cfg['dbs'])) fail('Réglages invalides');
+            $clean = [];
+            foreach ($cfg['dbs'] as $db => $r) {
+                $freq = in_array($r['freq'] ?? '', ['launch', 'day', 'week'], true) ? $r['freq'] : null;
+                if ($freq) $clean[(string)$db] = ['freq' => $freq, 'keep' => max(1, min(100, (int)($r['keep'] ?? 7)))];
             }
-            // Procédures et fonctions (seulement pour l'export d'une base entière)
-            $trg = [];
-            if (!$only) {
-                foreach (['PROCEDURE', 'FUNCTION'] as $kind) {
-                    foreach (rows_of($c, "SHOW $kind STATUS WHERE Db = " . esc_val($c, $db)) as $r) {
-                        $cr = rows_of($c, "SHOW CREATE $kind " . esc_id($r[1]));
-                        if (empty($cr[0][2])) continue;   // code non lisible (pas les droits)
-                        $trg[] = "DROP $kind IF EXISTS " . esc_id($r[1]) . " //";
-                        $trg[] = preg_replace('/\sDEFINER=`[^`]*`@`[^`]*`/', '', $cr[0][2]) . " //";
-                        $trg[] = "";
-                    }
-                }
-            }
-            // Triggers (écrits avec DELIMITER, comme phpMyAdmin)
-            foreach (rows_of($c, 'SHOW TRIGGERS') as $t) {
-                if ($only && $t[2] !== $only) continue;
-                $ct = rows_of($c, 'SHOW CREATE TRIGGER ' . esc_id($t[0]));
-                $trg[] = "DROP TRIGGER IF EXISTS " . esc_id($t[0]) . " //";
-                $trg[] = preg_replace('/\sDEFINER=`[^`]*`@`[^`]*`/', '', $ct[0][2]) . " //";
-                $trg[] = "";
-            }
-            if ($trg) {
-                $out[] = "-- --------------------------------------------------";
-                $out[] = "-- Procédures, fonctions et triggers";
-                $out[] = "-- --------------------------------------------------";
-                $out[] = "DELIMITER //";
-                array_push($out, ...$trg);
-                $out[] = "DELIMITER ;";
-                $out[] = "";
-            }
-            $out[] = "SET FOREIGN_KEY_CHECKS = 1;";
-            reply(implode("\n", $out));
+            file_put_contents(backup_config_path(), json_encode(['dbs' => (object)$clean], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            reply(['dbs' => (object)$clean]);
+        }
+        case 'backup_open': {
+            // ouvre le dossier dans l'explorateur Windows
+            pclose(popen('start "" explorer.exe ' . escapeshellarg(backup_dir()), 'r'));
+            reply(true);
         }
 
         case 'import': {
