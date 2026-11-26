@@ -3,7 +3,6 @@
 //  BaseStudio - partie serveur (version Edge / XAMPP)
 //  L'interface envoie ici des demandes en JSON, ce fichier parle à
 //  MySQL avec mysqli et renvoie la réponse en JSON.
-//  Même rôle que main.js dans la version .exe.
 // =====================================================================
 
 // Sécurité : seulement depuis ce PC, et seulement depuis BaseStudio
@@ -14,8 +13,47 @@ if ($origin !== '' && !preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#'
 if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== 0) { http_response_code(400); exit('JSON attendu'); }
 
 header('Content-Type: application/json; charset=utf-8');
+$cookiePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\') . '/';
 session_name('BASESTUDIO');
+session_set_cookie_params(['path' => $cookiePath, 'httponly' => true, 'samesite' => 'Strict']);
 session_start();
+
+// ---------------------------------------------------------------------
+//  Le mot de passe MySQL n'est jamais écrit en clair sur le disque.
+//  PHP garde la session dans un fichier (C:\xampp\tmp) : on y range le
+//  mot de passe CHIFFRÉ (AES-256-GCM). La clé, elle, reste dans un cookie
+//  du navigateur (HttpOnly, effacé à la fermeture de l'appli). Le fichier
+//  de session seul ne permet donc pas de retrouver le mot de passe.
+// ---------------------------------------------------------------------
+const KEY_COOKIE = 'BASESTUDIO_K';
+function session_key($create = false) {
+    global $cookiePath;
+    $k = isset($_COOKIE[KEY_COOKIE]) ? base64_decode($_COOKIE[KEY_COOKIE], true) : false;
+    if ($k !== false && strlen($k) === 32 && !$create) return $k;
+    if (!$create) return null;
+    $k = random_bytes(32);
+    setcookie(KEY_COOKIE, base64_encode($k), ['path' => $cookiePath, 'httponly' => true, 'samesite' => 'Strict']);
+    $_COOKIE[KEY_COOKIE] = base64_encode($k);
+    return $k;
+}
+function seal($plain) {
+    $k = session_key(true);
+    $iv = random_bytes(12);
+    $ct = openssl_encrypt((string)$plain, 'aes-256-gcm', $k, OPENSSL_RAW_DATA, $iv, $tag);
+    return base64_encode($iv . $tag . $ct);
+}
+function unseal($b64) {
+    $k = session_key();
+    $raw = $k ? base64_decode((string)$b64, true) : false;
+    if ($raw === false || strlen($raw) < 28) return null;
+    $p = openssl_decrypt(substr($raw, 28), 'aes-256-gcm', $k, OPENSSL_RAW_DATA, substr($raw, 0, 12), substr($raw, 12, 16));
+    return $p === false ? null : $p;
+}
+function forget_login() {
+    global $cookiePath;
+    unset($_SESSION['cfg']);
+    setcookie(KEY_COOKIE, '', ['expires' => 1, 'path' => $cookiePath, 'httponly' => true, 'samesite' => 'Strict']);
+}
 mysqli_report(MYSQLI_REPORT_OFF);   // on gère les erreurs nous-mêmes
 set_time_limit(0);
 ini_set('memory_limit', '1024M');
@@ -32,9 +70,11 @@ function fail($msg, $code = '') { echo json_encode(['ok' => false, 'error' => $m
 function db() {
     static $c = null;
     if ($c) return $c;
-    if (empty($_SESSION['cfg'])) fail("Pas connecté au serveur MySQL.", 'NOT_CONNECTED');
-    $cfg = $_SESSION['cfg'];
-    $c = open_conn($cfg);
+    $cfg = $_SESSION['cfg'] ?? null;
+    // ancienne session (mot de passe en clair) ou clé perdue : on redemande la connexion
+    $pw = is_array($cfg) && isset($cfg['pass']) && !isset($cfg['password']) ? unseal($cfg['pass']) : null;
+    if ($pw === null) { forget_login(); fail("Pas connecté au serveur MySQL (reconnecte-toi).", 'NOT_CONNECTED'); }
+    $c = open_conn(['host' => $cfg['host'], 'port' => $cfg['port'], 'user' => $cfg['user'], 'password' => $pw]);
     return $c;
 }
 function open_conn($cfg) {
@@ -82,6 +122,7 @@ function clean($v) {
 // Exécute une ou plusieurs requêtes, renvoie la liste des résultats
 function run_sql($c, $sql) {
     $results = [];
+    $GLOBALS['sql_done'] = 0;
     if (!$c->multi_query($sql)) {
         throw new Exception($c->error, $c->errno);
     }
@@ -103,6 +144,7 @@ function run_sql($c, $sql) {
             break;
         }
     } while (true);
+    $GLOBALS['sql_done'] = count($results);   // nombre de requêtes réussies (utile si erreur)
     if ($c->errno) throw new Exception($c->error, $c->errno);
     return $results;
 }
@@ -203,13 +245,16 @@ try {
         case 'connect': {
             $cfg = $in['cfg'] ?? [];
             $c = open_conn($cfg);
-            $_SESSION['cfg'] = $cfg;
+            session_regenerate_id(true);   // nouvelle session, l'ancien fichier est effacé
+            $_SESSION['cfg'] = ['host' => (string)($cfg['host'] ?? 'localhost'), 'port' => (int)($cfg['port'] ?? 3306),
+                                'user' => (string)($cfg['user'] ?? 'root'), 'pass' => seal($cfg['password'] ?? '')];
             $r = rows_of($c, 'SELECT VERSION(), CURRENT_USER()');
             reply(['version' => $r[0][0], 'user' => $r[0][1]]);
         }
 
         case 'disconnect':
-            unset($_SESSION['cfg']);
+            forget_login();
+            session_destroy();
             reply(true);
 
         case 'query': {
@@ -294,7 +339,13 @@ try {
         case 'import': {
             $c = db();
             if (!empty($in['database'])) $c->select_db($in['database']);
-            $results = run_sql($c, $in['sql'] ?? '');
+            // l'interface envoie le fichier par paquets ; si une requête échoue,
+            // on dit combien de requêtes du paquet étaient passées avant elle
+            try { $results = run_sql($c, $in['sql'] ?? ''); }
+            catch (Throwable $e) {
+                echo json_encode(['ok' => false, 'error' => $e->getMessage(), 'code' => 'ER_' . $e->getCode(), 'done' => $GLOBALS['sql_done'] ?? 0], JSON_INVALID_UTF8_SUBSTITUTE);
+                exit;
+            }
             reply(['count' => count($results)]);
         }
 

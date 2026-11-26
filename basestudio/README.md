@@ -8,13 +8,13 @@ Ton gestionnaire de bases MySQL / MariaDB (comme phpMyAdmin), avec une apparence
 2. Double-clique sur le raccourci **BaseStudio** du Bureau (le logo rose et violet), ou cherche « BaseStudio » dans le menu Démarrer.
 3. Clique sur **Se connecter** (`localhost` / `3306` / `root` / mot de passe vide = réglages de XAMPP).
 
-L'appli s'ouvre dans sa propre fenêtre Edge. Elle n'est donc jamais bloquée par le « Contrôle intelligent des applications » de Windows, contrairement à un `.exe` non signé.
+L'appli s'ouvre dans sa propre fenêtre Edge, sans rien installer d'autre que XAMPP.
 
 ### Où sont les fichiers
 
 - **L'appli** : `C:\xampp\htdocs\basestudio\`. `api.php` parle à MySQL, le reste c'est l'interface.
-- **Le raccourci** : il ouvre Edge en mode appli sur `http://localhost/basestudio/`. Pour le recréer, double-clique sur `CREER-RACCOURCI.bat` dans le dossier BaseStudio du Bureau.
-- Le dossier BaseStudio du Bureau contient aussi l'ancienne version `.exe` (même interface). Elle marche quand Windows la laisse passer.
+- **Le raccourci** : il ouvre Edge en mode appli sur `http://localhost/basestudio/`. Pour le recréer, relance `INSTALLER.bat`.
+- **L'ancienne version** après une mise à jour : `C:\xampp\htdocs\basestudio\_sauvegarde\`.
 
 ## La partager
 
@@ -122,7 +122,13 @@ Les commentaires des colonnes (Structure → Modifier) remplissent la colonne «
 
 | Fichier | Rôle |
 |---|---|
-| `api.php` (version Edge) | Parle à MySQL avec PHP (connexion, requêtes, export/import). |
+| `api.php` | Parle à MySQL avec PHP (connexion, requêtes, export/import, mises à jour). |
+| `index.html` | La structure de la page. |
+| `style.css` | Le style. Tout passe par des variables CSS (`--accent`, `--radius`…). |
+| `theme.js` | Le panneau Apparence et les thèmes. |
+| `app.js` | Les écrans principaux (bases, tables, SQL, Ctrl+K…). |
+| `update.js` | Le bouton « ⬆ Mise à jour ». |
+| `version.json` | Le numéro de version et la liste des fichiers (pour les mises à jour). |
 | `index.php` | La page d'accueil : renvoie `index.html` en ajoutant à chaque `.js` / `.css` sa date de modification, pour qu'Edge recharge tout seul un fichier modifié. |
 | `api-web.js` | Fait le lien entre l'interface et `api.php`. |
 | `schema.js` | L'onglet Schéma (MCD / MLD façon MERISE). |
@@ -135,19 +141,11 @@ Les commentaires des colonnes (Structure → Modifier) remplissent la colonne «
 | `csv.js` | L'import CSV dans une table. |
 | `search.js` | La recherche dans toute une base. |
 | `users.js` | Les utilisateurs MySQL et leurs droits. |
-| `resources/app/main.js` (version .exe) | Pareil, mais pour la version .exe. |
-| `resources/app/lib/mysql.js` | Le mini client MySQL fait maison (aucune dépendance). |
-| `resources/app/preload.js` | Fait le lien entre l'interface et `main.js` (`window.api`). |
-| `resources/app/renderer/index.html` | La structure de la page. |
-| `resources/app/renderer/style.css` | Le style. Tout passe par des variables CSS (`--accent`, `--radius`…). |
-| `resources/app/renderer/theme.js` | Le panneau Apparence et les thèmes. |
-| `resources/app/renderer/app.js` | Tous les écrans (bases, tables, SQL…). |
+Tu peux modifier ces fichiers directement dans `C:\xampp\htdocs\basestudio\`, puis recharger la page (F5). Pour ajouter un thème prêt, ajoute une entrée dans `PRESETS` au début de `theme.js`. Attention : une mise à jour remplace ces fichiers (ta version est gardée dans `_sauvegarde\`).
 
-Tu peux modifier le code directement dans `resources/app/`, puis relancer l'appli. Pour ajouter un thème prêt, ajoute une entrée dans `PRESETS` au début de `resources/app/renderer/theme.js`.
-
-`INSTALLER.bat` et `_installer.ps1` ont servi à l'installation : tu peux les supprimer.
+`INSTALLER.bat` et `_installer.ps1` ont servi à l'installation : tu peux les supprimer, ou les garder pour recréer le raccourci.
 
 ## Bon à savoir
 
-- Si tu coches « Se souvenir de ce serveur », le mot de passe est enregistré en clair sur ton PC. Avec XAMPP en local (mot de passe vide), aucun souci.
-- Les fichiers SQL qui utilisent `DELIMITER` (procédures, triggers) ne passent pas à l'import : exécute-les morceau par morceau dans l'onglet SQL.
+- **Mots de passe** : « Se souvenir de ce serveur » ne garde que le serveur, le port et l'utilisateur, **jamais le mot de passe**. Un serveur sans mot de passe (XAMPP) se connecte en un clic ; sinon BaseStudio te le demande, et Edge peut proposer de le retenir dans son gestionnaire de mots de passe (chiffré par Windows). Pendant que tu es connecté, le mot de passe est gardé chiffré côté serveur, et la clé disparaît quand tu fermes l'appli ou te déconnectes.
+- **Import de gros fichiers `.sql`** : le fichier est découpé et envoyé par paquets, avec une barre de progression. Les `DELIMITER` (procédures, triggers) sont gérés. Si une seule requête dépasse la limite du serveur, augmente `max_allowed_packet` dans `C:\xampp\mysql\bin\my.ini` (ex : `64M`) puis redémarre MySQL.

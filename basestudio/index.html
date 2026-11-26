@@ -25,28 +25,28 @@
         </div>
       </div>
 
-      <form id="login-form" autocomplete="off">
+      <form id="login-form" autocomplete="on">
         <div class="field-row">
           <label class="field grow">
             <span>Serveur</span>
-            <input id="lg-host" value="localhost" spellcheck="false">
+            <input id="lg-host" name="host" value="localhost" spellcheck="false" autocomplete="off">
           </label>
           <label class="field" style="width:110px">
             <span>Port</span>
-            <input id="lg-port" value="3306" inputmode="numeric">
+            <input id="lg-port" name="port" value="3306" inputmode="numeric" autocomplete="off">
           </label>
         </div>
         <label class="field">
           <span>Utilisateur</span>
-          <input id="lg-user" value="root" spellcheck="false">
+          <input id="lg-user" name="username" value="root" spellcheck="false" autocomplete="username">
         </label>
         <label class="field">
           <span>Mot de passe <em class="muted">(vide par défaut sur XAMPP)</em></span>
-          <input id="lg-pass" type="password">
+          <input id="lg-pass" name="password" type="password" autocomplete="current-password">
         </label>
         <label class="check">
           <input type="checkbox" id="lg-remember" checked>
-          <span>Se souvenir de ce serveur</span>
+          <span>Se souvenir de ce serveur <em class="muted small">(sans le mot de passe)</em></span>
         </label>
         <div id="login-error" class="alert danger" hidden></div>
         <button class="btn primary big" type="submit" id="lg-submit">Se connecter</button>

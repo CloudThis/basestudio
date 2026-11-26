@@ -66,11 +66,13 @@ const state = {
   sqlText: {}            // texte de l'éditeur SQL pour chaque endroit
 };
 
-// ---- Exécuter du SQL (passe par main.js) + écrire dans le journal ----
+// ---- Exécuter du SQL (passe par api.php) + écrire dans le journal ----
 async function run(sql, params = [], db = undefined) {
   const res = await window.api.query(sql, params, db);
   addJournal(sql, params, res.ok, res.ok ? res.data.time + ' ms' : res.error);
   if (!res.ok) {
+    // session expirée (ou ancienne session) : retour à l'écran de connexion
+    if (res.code === 'NOT_CONNECTED' && state.server) { toast('Session expirée : reconnecte-toi', 'error'); disconnect(); }
     const err = new Error(res.error);
     err.sql = sql;
     throw err;
@@ -280,14 +282,29 @@ async function saveText(name, content, ext) {
 // ---------------------------------------------------------------------
 // 2. CONNEXION
 // ---------------------------------------------------------------------
+// Serveurs mémorisés : serveur, port et utilisateur SEULEMENT, jamais le mot de passe.
+// noPassword = ce serveur n'a pas de mot de passe (XAMPP) : connexion en un clic.
 function savedServers() {
-  try { return JSON.parse(localStorage.getItem('bs.servers')) || []; } catch (e) { return []; }
+  let list;
+  try { list = JSON.parse(localStorage.getItem('bs.servers')) || []; } catch (e) { list = []; }
+  // les anciennes versions gardaient le mot de passe en clair : on l'efface tout de suite
+  if (list.some(s => 'password' in s)) {
+    list = list.map(s => ({ host: s.host, port: s.port, user: s.user, noPassword: s.noPassword ?? !s.password }));
+    localStorage.setItem('bs.servers', JSON.stringify(list));
+  }
+  return list;
 }
 function renderSavedServers() {
   const list = savedServers();
   $('#saved-servers').innerHTML = list.length ? '<div class="saved-title">Serveurs enregistrés</div>' +
-    list.map((s, i) => '<div class="saved-item" data-srv="' + i + '"><span>🖥️ <strong>' + h(s.user) + '</strong>@' + h(s.host) + ':' + h(s.port) + '</span>' +
+    list.map((s, i) => '<div class="saved-item" data-srv="' + i + '" title="' + (s.noPassword ? 'Connexion directe (pas de mot de passe)' : 'Mot de passe demandé') + '">' +
+      '<span>' + (s.noPassword ? '🖥️' : '🔒') + ' <strong>' + h(s.user) + '</strong>@' + h(s.host) + ':' + h(s.port) + '</span>' +
       '<button class="icon-btn" data-srv-del="' + i + '" title="Oublier">✕</button></div>').join('') : '';
+}
+// remplit le formulaire avec un serveur mémorisé (sans mot de passe)
+function fillLogin(s) {
+  $('#lg-host').value = s.host; $('#lg-port').value = s.port; $('#lg-user').value = s.user;
+  $('#lg-pass').value = '';
 }
 
 async function connect(cfg) {
@@ -307,10 +324,11 @@ async function connect(cfg) {
   }
 
   if ($('#lg-remember').checked) {
-    const list = savedServers().filter(s => !(s.host === cfg.host && s.port === cfg.port && s.user === cfg.user));
-    list.unshift(cfg);
+    const list = savedServers().filter(s => !(s.host === cfg.host && String(s.port) === String(cfg.port) && s.user === cfg.user));
+    list.unshift({ host: cfg.host, port: cfg.port, user: cfg.user, noPassword: !cfg.password });   // jamais le mot de passe
     localStorage.setItem('bs.servers', JSON.stringify(list.slice(0, 8)));
   }
+  $('#lg-pass').value = '';
   state.server = Object.assign({}, cfg, res.data);
   $('#server-chip').textContent = cfg.user + '@' + cfg.host + ' · ' + res.data.version;
   $('#login-screen').hidden = true;
@@ -1058,11 +1076,24 @@ VIEWS['import'] = async view => {
 
   $('#im-ok', view).onclick = async () => {
     const out = $('#im-result', view);
-    out.innerHTML = '<div class="muted">⏳ Import en cours…</div>';
-    const res = await window.api.importSql(state.db || null);
-    if (!res.ok) { out.innerHTML = '<div class="alert danger"><strong>Erreur pendant l\'import :</strong>\n' + h(res.error) + '</div>'; addJournal('-- import fichier', [], false, res.error); return; }
+    out.innerHTML = '<div class="muted">⏳ Lecture du fichier…</div>';
+    const t0 = Date.now();
+    const res = await window.api.importSql(state.db || null, (done, total) => {
+      const pct = total ? Math.round(done * 100 / total) : 0;
+      out.innerHTML = '<div class="muted">⏳ Import en cours : ' + fmtNum(done) + ' / ' + fmtNum(total) + ' requêtes (' + pct + ' %)</div>' +
+        '<div class="progress"><div style="width:' + pct + '%"></div></div>';
+    });
+    if (!res.ok) {
+      const f = res.failed;
+      out.innerHTML = '<div class="alert danger"><strong>Erreur pendant l\'import' + (f ? ' (requête ' + fmtNum(f.index) + ' sur ' + fmtNum(f.total) + ')' : '') + ' :</strong>\n' + h(res.error) +
+        (f ? '\n\nLes requêtes d\'avant ont été exécutées. Requête en cause :</div><div class="sql-preview">' + highlight(f.sql) + '</div>' : '</div>');
+      addJournal('-- import fichier', [], false, res.error);
+      state.tables = {}; await loadTree();
+      return;
+    }
     if (!res.data) { out.innerHTML = ''; return; }
-    out.innerHTML = '<div class="alert success">✔ Import terminé : ' + res.data.count + ' requête(s) exécutée(s).\n' + h(res.data.file) + '</div>';
+    out.innerHTML = '<div class="alert success">✔ Import terminé : ' + fmtNum(res.data.count) + ' requête(s) exécutée(s) en ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s' +
+      (res.data.packets > 1 ? ' (envoyées en ' + res.data.packets + ' paquets)' : '') + '.\n' + h(res.data.file) + '</div>';
     addJournal('-- import ' + res.data.file, [], true, res.data.count + ' requêtes');
     state.tables = {};
     await loadTree();
@@ -1250,10 +1281,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSavedServers();
   // on pré-remplit avec le dernier serveur utilisé
   const last = savedServers()[0];
-  if (last) {
-    $('#lg-host').value = last.host; $('#lg-port').value = last.port;
-    $('#lg-user').value = last.user; $('#lg-pass').value = last.password || '';
-  }
+  if (last) fillLogin(last);
 
   $('#login-form').addEventListener('submit', e => {
     e.preventDefault();
@@ -1268,7 +1296,11 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('bs.servers', JSON.stringify(list)); renderSavedServers(); return;
     }
     const it = e.target.closest('[data-srv]');
-    if (it) connect(savedServers()[it.dataset.srv]);
+    if (!it) return;
+    const s = savedServers()[it.dataset.srv];
+    fillLogin(s);
+    if (s.noPassword) connect({ host: s.host, port: s.port, user: s.user, password: '' });
+    else { $('#lg-pass').focus(); toast('Tape le mot de passe de ' + s.user + ', puis Entrée'); }
   });
 
   $('#topnav').addEventListener('click', e => {
