@@ -1,0 +1,153 @@
+# BaseStudio
+
+Ton gestionnaire de bases MySQL / MariaDB (comme phpMyAdmin), avec une apparence que tu peux changer à 100 %.
+
+## Le lancer
+
+1. Dans le **panneau XAMPP**, clique sur **Start** à côté de **Apache** et de **MySQL** (comme pour phpMyAdmin).
+2. Double-clique sur le raccourci **BaseStudio** du Bureau (le logo rose et violet), ou cherche « BaseStudio » dans le menu Démarrer.
+3. Clique sur **Se connecter** (`localhost` / `3306` / `root` / mot de passe vide = réglages de XAMPP).
+
+L'appli s'ouvre dans sa propre fenêtre Edge. Elle n'est donc jamais bloquée par le « Contrôle intelligent des applications » de Windows, contrairement à un `.exe` non signé.
+
+### Où sont les fichiers
+
+- **L'appli** : `C:\xampp\htdocs\basestudio\`. `api.php` parle à MySQL, le reste c'est l'interface.
+- **Le raccourci** : il ouvre Edge en mode appli sur `http://localhost/basestudio/`. Pour le recréer, double-clique sur `CREER-RACCOURCI.bat` dans le dossier BaseStudio du Bureau.
+- Le dossier BaseStudio du Bureau contient aussi l'ancienne version `.exe` (même interface). Elle marche quand Windows la laisse passer.
+
+## La partager
+
+Tes potes téléchargent BaseStudio sur https://github.com/CloudThis/basestudio (bouton vert **Code** puis **Download ZIP**), puis lancent `INSTALLER.bat`.
+
+## Les mises à jour
+
+Quand une nouvelle version est publiée, un bouton **⬆ Mise à jour** apparaît dans l'appli (en haut à droite et sur l'écran de connexion). Un clic montre les nouveautés, **Installer** télécharge les nouveaux fichiers, vérifie chacun (empreinte SHA-256) et garde l'ancienne version dans `_sauvegarde/`. Les bases, thèmes et réglages ne sont pas touchés. **Ctrl+K** puis « Vérifier les mises à jour » pour vérifier à la main.
+
+## Ce que tu peux faire
+
+- **Accueil** : tes bases en tuiles colorées (chaque base a sa couleur). Tu peux en créer et en supprimer.
+- **Recherche rapide Ctrl+K** : tape un bout de nom pour ouvrir une base, une table, un trigger, une procédure ou une fonction (l'onglet s'ouvre et la ligne clignote), aller à un onglet (Triggers, Procédures, Vues, Rechercher, Schéma, Dictionnaire), lancer une action, ou coller du SQL.
+- **Base** : les tables en cartes, un onglet **🔗 Schéma** qui dessine la base façon MERISE (voir plus bas), créer une table avec un formulaire (le SQL s'affiche en direct), créer des **triggers** (onglet ⚡ Triggers) et des **procédures / fonctions stockées** (onglet 🧩 Procédures), exporter / importer un fichier `.sql`, changer l'interclassement, supprimer la base.
+- **Table** :
+  - Parcourir les données : pages, tri en cliquant sur une colonne, recherche, export CSV.
+  - Double-clic sur une case pour la modifier, 🗑 pour supprimer une ligne.
+  - Structure : ajouter, modifier ou supprimer des colonnes, des index et des **clés étrangères**.
+  - Une colonne qui est une clé étrangère devient une **liste déroulante** (« 3 – Dupont Marie ») dans Insérer et quand tu double-cliques une case dans Parcourir.
+  - ⚡ Triggers : ceux de la table, et le formulaire pour en créer.
+  - 📥 Import CSV : importe un fichier CSV / Excel dans la table (voir plus bas).
+  - Insérer une ligne, renommer, copier, vider ou supprimer la table.
+- **SQL** : un éditeur avec les couleurs, les numéros de ligne et l'**auto-complétion** (tables, colonnes, alias `c.`, fonctions, mots-clés : ↑ ↓ pour choisir, Entrée ou Tab pour valider, Ctrl+Espace pour ouvrir la liste). **Ctrl+Entrée** exécute, plusieurs requêtes passent d'un coup, il y a un historique et des modèles prêts (CREATE TABLE, JOIN, FOREIGN KEY…).
+- **👤 Utilisateurs** (menu du haut) : les comptes MySQL et leurs droits (voir plus bas).
+- **Journal SQL** (bouton 📜 en bas à gauche) : toutes les requêtes que l'appli a envoyées. Clique sur une ligne pour la rouvrir dans l'éditeur.
+
+## Le schéma MERISE (onglet 🔗 Schéma d'une base)
+
+- **MCD** : les tables deviennent des entités, les clés étrangères des associations (ovales) avec leurs cardinalités (`0,1`, `1,1`, `0,n`). Une table de liaison (clé primaire faite uniquement de clés étrangères) devient une association avec ses attributs.
+- **MLD** : toutes les tables avec leurs colonnes et leurs types. Souligné = clé primaire, `#` = clé étrangère, la flèche va vers la table référencée.
+- Glisse une boîte pour la déplacer (la position est retenue), glisse le fond pour te déplacer, molette pour zoomer.
+- Double-clic sur une entité : ouvre sa structure. Double-clic sur une association : lui donner un nom (un verbe, ex. « passer »). Ce nom n'est gardé que dans BaseStudio.
+- **🔗 Relier** : tire un trait d'une table (ex : commande) vers une autre (ex : client) pour créer la clé étrangère. La colonne peut être créée automatiquement (`id_client`).
+- **📖 Dictionnaire** : voir plus bas.
+- **✨ Réorganiser** replace tout automatiquement, **⬇ PNG / ⬇ SVG** exportent le dessin, **⛶** passe en plein écran.
+- Accès rapide : **Ctrl+K** puis tape « schéma » ou le nom d'une base.
+- Les liens viennent des `FOREIGN KEY` : une base sans clé étrangère est dessinée sans liens.
+
+## Les triggers (onglet ⚡ Triggers d'une base ou d'une table)
+
+- La liste des triggers : voir le code, **Modifier** (le trigger est remplacé ; si le nouveau code a une erreur, l'ancien est remis), **Supprimer**.
+- Le formulaire : choisis la table, `BEFORE` / `AFTER`, `INSERT` / `UPDATE` / `DELETE`, puis écris le code qui va entre `BEGIN` et `END`.
+- Des modèles prêts (majuscules, date automatique, refuser une valeur avec `SIGNAL`, historique…) et les colonnes `NEW.` / `OLD.` s'insèrent d'un clic.
+- Les erreurs classiques sont signalées avant d'exécuter (`SET NEW` en `AFTER`, `OLD` en `INSERT`, trigger qui modifie sa propre table…).
+- Le SQL exact s'affiche en direct, et tu peux l'ouvrir dans l'éditeur SQL.
+- Les exports `.sql` contiennent maintenant aussi les triggers (avec `DELIMITER`, comme phpMyAdmin).
+
+## Les procédures et fonctions (onglet 🧩 Procédures d'une base)
+
+- La liste des procédures (`CREATE PROCEDURE`) et fonctions (`CREATE FUNCTION`), avec leurs paramètres.
+- **▶ Exécuter** : tu remplis les paramètres et BaseStudio lance `CALL …` (ou `SELECT ma_fonction(…)`). Les lignes renvoyées et les paramètres `OUT` / `INOUT` s'affichent.
+- **Voir le code**, **Modifier** (si le nouveau code a une erreur, l'ancien est remis), **Supprimer**.
+- Le formulaire : procédure ou fonction, nom, paramètres (`IN` / `OUT` / `INOUT`), type renvoyé (`RETURNS`) pour une fonction, `DETERMINISTIC`, accès aux données, commentaire, et le code entre `BEGIN` et `END`.
+- Des modèles prêts (SELECT, INSERT, UPDATE, variable, IF, boucle WHILE, transaction…) et les paramètres, tables et colonnes s'insèrent d'un clic.
+- Les erreurs classiques sont signalées avant d'exécuter (fonction sans `RETURN`, `RETURN` dans une procédure, `DECLARE` mal placé…).
+- Les exports `.sql` d'une base contiennent aussi les procédures et fonctions.
+
+## Le dictionnaire de données (📖)
+
+Un document qui décrit toute la base : sommaire, schémas MCD et MLD, puis chaque table avec ses colonnes (type, null, défaut, clé, description), ses clés étrangères, index et triggers, les vues, les procédures et fonctions.
+On l'ouvre depuis le Schéma, l'onglet Exporter d'une base ou Ctrl+K. **Imprimer / PDF** (choisis « Enregistrer au format PDF ») ou **Télécharger (.html)**.
+Les commentaires des colonnes (Structure → Modifier) remplissent la colonne « Description ».
+
+## Les vues (onglet 👁 Vues d'une base)
+
+- La liste des vues : **Parcourir**, voir le code, modifier, supprimer.
+- Le formulaire : le nom et la requête `SELECT` (avec l'auto-complétion), `WITH CHECK OPTION` si besoin.
+- **✨ Écrire le SELECT** : choisis une table, BaseStudio écrit la requête avec les `LEFT JOIN` vers les tables liées par clé étrangère.
+- **▶ Tester** montre les 20 premières lignes avant de créer la vue.
+
+## L'import CSV (onglet 📥 Import CSV d'une table)
+
+- Choisis le fichier (ou glisse-le sur la page). Le séparateur (`;` `,` tabulation) et l'encodage (UTF-8 ou Excel Windows) sont devinés.
+- Chaque colonne de la table est associée à une colonne du fichier (automatique si les noms se ressemblent, modifiable).
+- Les dates `25/12/2026` et les nombres `1 234,50` sont convertis. Une case vide donne `NULL` ou la valeur par défaut.
+- Si une ligne existe déjà : arrêter, sauter (`INSERT IGNORE`) ou remplacer (`REPLACE`). Option « Vider la table avant ».
+- L'envoi se fait par paquets (MySQL refuse plus de 1 Mo d'un coup) : 30 000 lignes passent en moins d'une seconde.
+
+## La recherche (onglet 🔍 Rechercher d'une base)
+
+- Cherche un texte ou un nombre dans toutes les colonnes de toutes les tables (ou celles que tu choisis) : contient, est exactement, commence par, ou REGEXP.
+- Résultat : le nombre de lignes par table, **Voir les lignes** (texte surligné) ou **Ouvrir la table** (avec la recherche déjà remplie).
+
+## Les utilisateurs et droits (👤 Utilisateurs)
+
+- La liste des comptes (`nom@hôte`) avec le résumé de leurs droits. Le compte avec lequel tu es connecté ne peut pas être supprimé.
+- **Nouveau compte** : nom, d'où il se connecte (`localhost`, `%` ou une adresse), mot de passe (🎲 en crée un solide), droits sur toutes les bases ou une seule, avec des préréglages (lecture seule, lecture + écriture, développeur, tous les droits).
+- **🔑 Droits** : coche / décoche par base, **🔒 Mot de passe**, **Voir les GRANT**, **Supprimer**.
+- Les mots de passe ne sont jamais écrits dans le journal SQL (`••••••••`).
+- Attention : avec XAMPP, phpMyAdmin se connecte en `root` sans mot de passe. Si tu en mets un à `root`, change-le aussi dans `C:\xampp\phpMyAdmin\config.inc.php`.
+
+## L'apparence (bouton 🎨)
+
+- 9 thèmes prêts : Corail (par défaut), Violet nuit, Jour, Océan, Forêt, Sakura, Terminal, Coucher de soleil, Graphite.
+- Toutes les couleurs : l'interface, les tableaux, et chaque couleur de l'éditeur SQL.
+- Polices et tailles. Tu peux taper n'importe quelle police installée, ou charger une police Google.
+- Arrondis, bordures, espacement, hauteur des lignes, largeur de la barre latérale, ombres.
+- Effets : halo lumineux, panneaux transparents, effet verre (flou).
+- Fond d'écran avec ta propre image (opacité et flou réglables).
+- La barre du haut flottante ou collée, la taille des tuiles, la largeur du contenu, le nom de l'appli et le logo (laisse vide pour garder le logo BaseStudio, ou mets une lettre ou un emoji).
+- **CSS personnalisé** : tu écris ton propre CSS pour changer absolument tout.
+- **Mes thèmes** : enregistre tes créations, exporte-les en `.json` pour les partager, importe ceux de tes potes.
+
+## Comment est rangé le code
+
+| Fichier | Rôle |
+|---|---|
+| `api.php` (version Edge) | Parle à MySQL avec PHP (connexion, requêtes, export/import). |
+| `index.php` | La page d'accueil : renvoie `index.html` en ajoutant à chaque `.js` / `.css` sa date de modification, pour qu'Edge recharge tout seul un fichier modifié. |
+| `api-web.js` | Fait le lien entre l'interface et `api.php`. |
+| `schema.js` | L'onglet Schéma (MCD / MLD façon MERISE). |
+| `triggers.js` | L'onglet Triggers (liste, création, modification). |
+| `procedures.js` | L'onglet Procédures (procédures et fonctions stockées). |
+| `relations.js` | Les clés étrangères : Structure, listes déroulantes, fenêtre de création. |
+| `complete.js` | L'auto-complétion de l'éditeur SQL. |
+| `dictionary.js` | Le dictionnaire de données (impression / PDF / .html). |
+| `views.js` | L'onglet Vues (CREATE VIEW, assistant de jointures). |
+| `csv.js` | L'import CSV dans une table. |
+| `search.js` | La recherche dans toute une base. |
+| `users.js` | Les utilisateurs MySQL et leurs droits. |
+| `resources/app/main.js` (version .exe) | Pareil, mais pour la version .exe. |
+| `resources/app/lib/mysql.js` | Le mini client MySQL fait maison (aucune dépendance). |
+| `resources/app/preload.js` | Fait le lien entre l'interface et `main.js` (`window.api`). |
+| `resources/app/renderer/index.html` | La structure de la page. |
+| `resources/app/renderer/style.css` | Le style. Tout passe par des variables CSS (`--accent`, `--radius`…). |
+| `resources/app/renderer/theme.js` | Le panneau Apparence et les thèmes. |
+| `resources/app/renderer/app.js` | Tous les écrans (bases, tables, SQL…). |
+
+Tu peux modifier le code directement dans `resources/app/`, puis relancer l'appli. Pour ajouter un thème prêt, ajoute une entrée dans `PRESETS` au début de `resources/app/renderer/theme.js`.
+
+`INSTALLER.bat` et `_installer.ps1` ont servi à l'installation : tu peux les supprimer.
+
+## Bon à savoir
+
+- Si tu coches « Se souvenir de ce serveur », le mot de passe est enregistré en clair sur ton PC. Avec XAMPP en local (mot de passe vide), aucun souci.
+- Les fichiers SQL qui utilisent `DELIMITER` (procédures, triggers) ne passent pas à l'import : exécute-les morceau par morceau dans l'onglet SQL.

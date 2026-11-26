@@ -1,0 +1,40 @@
+﻿BASESTUDIO - comment l'installer
+================================
+
+BaseStudio est un gestionnaire de bases MySQL (comme phpMyAdmin), avec des thèmes
+qu'on peut personnaliser à fond.
+
+Ce qu'il te faut
+----------------
+- Windows avec Microsoft Edge (déjà installé sur tous les Windows 10/11).
+- XAMPP : https://www.apachefriends.org/fr/  (installe-le dans C:\xampp, c'est le choix par défaut).
+
+Installation (1 minute)
+-----------------------
+0. Télécharge BaseStudio sur https://github.com/CloudThis/basestudio
+   (bouton vert « Code » puis « Download ZIP »).
+1. Clic droit sur le ZIP > "Extraire tout..." (ne lance rien depuis le ZIP directement).
+2. Dans le dossier extrait, double-clique sur INSTALLER.bat.
+   Si Windows affiche "Windows a protégé votre ordinateur" : clique sur
+   "Informations complémentaires" puis "Exécuter quand même".
+3. C'est fini : un raccourci BaseStudio apparaît sur ton Bureau.
+
+Lancer BaseStudio
+-----------------
+1. Ouvre le panneau XAMPP, clique sur Start à côté de Apache ET de MySQL.
+2. Double-clique sur le raccourci BaseStudio.
+3. Clique sur "Se connecter" (localhost / 3306 / root / mot de passe vide).
+
+Mises à jour
+------------
+Quand une nouvelle version sort, un bouton « ⬆ Mise à jour » apparaît dans
+BaseStudio. Clique dessus, puis sur « Installer » : c'est tout. Tes bases et
+tes réglages ne sont pas touchés.
+
+Tes données à toi
+-----------------
+L'appli arrive vide : tu ne vois que les bases de TON MySQL à toi.
+Tes thèmes, tes serveurs enregistrés et ton historique SQL restent sur ton PC.
+Rien n'est partagé avec la personne qui t'a envoyé l'appli.
+
+Le README.md dans le dossier basestudio explique toutes les fonctions.

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: file:; script-src 'self'">
+  <title>BaseStudio</title>
+  <link rel="icon" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+  <style id="custom-css"></style>
+</head>
+<body>
+
+  <!-- Image de fond personnalisable -->
+  <div id="bg-layer"></div>
+
+  <!-- ============ ÉCRAN DE CONNEXION ============ -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="logo brand-logo has-img"><img src="logo.svg" alt=""></div>
+        <div>
+          <h1 class="brand-name">BaseStudio</h1>
+          <p class="muted">Connexion à ton serveur MySQL / MariaDB</p>
+        </div>
+      </div>
+
+      <form id="login-form" autocomplete="off">
+        <div class="field-row">
+          <label class="field grow">
+            <span>Serveur</span>
+            <input id="lg-host" value="localhost" spellcheck="false">
+          </label>
+          <label class="field" style="width:110px">
+            <span>Port</span>
+            <input id="lg-port" value="3306" inputmode="numeric">
+          </label>
+        </div>
+        <label class="field">
+          <span>Utilisateur</span>
+          <input id="lg-user" value="root" spellcheck="false">
+        </label>
+        <label class="field">
+          <span>Mot de passe <em class="muted">(vide par défaut sur XAMPP)</em></span>
+          <input id="lg-pass" type="password">
+        </label>
+        <label class="check">
+          <input type="checkbox" id="lg-remember" checked>
+          <span>Se souvenir de ce serveur</span>
+        </label>
+        <div id="login-error" class="alert danger" hidden></div>
+        <button class="btn primary big" type="submit" id="lg-submit">Se connecter</button>
+      </form>
+
+      <div id="saved-servers"></div>
+
+      <div class="login-foot">
+        <button class="btn ghost small" data-action="open-appearance">🎨 Apparence</button>
+        <span class="muted small">Astuce : lance d'abord MySQL dans le panneau XAMPP.</span>
+        <span class="muted small app-version"></span>
+        <button class="btn small primary update-btn" hidden>⬆ Mise à jour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ APPLICATION ============ -->
+  <div id="app" hidden>
+
+    <!-- Barre du haut -->
+    <header id="topbar">
+      <div class="tb-left" data-action="go-home" title="Accueil">
+        <div class="logo brand-logo has-img"><img src="logo.svg" alt=""></div>
+        <strong class="brand-name">BaseStudio</strong>
+      </div>
+
+      <nav id="topnav">
+        <button data-nav="home">🗄️ Bases</button>
+        <button data-nav="sql">⌨️ SQL</button>
+        <button data-nav="import">📥 Importer</button>
+        <button data-nav="users">👤 Utilisateurs</button>
+      </nav>
+
+      <div class="tb-right">
+        <button class="btn small primary update-btn" hidden title="Une nouvelle version de BaseStudio est disponible">⬆ Mise à jour</button>
+        <button class="search-pill" data-action="open-palette">
+          <span>⌕ Aller à…</span><span class="kbd">Ctrl K</span>
+        </button>
+        <span class="server-chip" id="server-chip" title="Serveur connecté">—</span>
+        <button class="icon-btn round" data-action="open-appearance" title="Apparence">🎨</button>
+        <button class="icon-btn round" data-action="disconnect" title="Déconnexion">⏻</button>
+      </div>
+    </header>
+
+    <!-- Contenu -->
+    <main id="main">
+      <div id="page">
+        <div id="page-head">
+          <div id="breadcrumb"></div>
+          <div class="ph-row">
+            <h1 id="page-title"></h1>
+            <div id="top-actions"></div>
+          </div>
+          <nav id="tabs"></nav>
+        </div>
+        <section id="view"></section>
+      </div>
+    </main>
+
+    <!-- Journal SQL (bouton flottant) -->
+    <button id="journal-fab" data-action="toggle-journal" title="Journal SQL">📜 <span id="journal-count">0</span></button>
+    <aside id="journal" class="collapsed">
+      <div class="journal-head">
+        <strong>Journal SQL</strong>
+        <span class="muted small">Clique sur une requête pour la rouvrir</span>
+        <button class="icon-btn" data-action="toggle-journal" title="Fermer">✕</button>
+      </div>
+      <div id="journal-list"></div>
+    </aside>
+  </div>
+
+  <!-- ============ RECHERCHE RAPIDE (Ctrl+K) ============ -->
+  <div id="palette" hidden>
+    <div class="pal-box">
+      <input id="pal-input" placeholder="Une base, une table, une action… ou tape du SQL" spellcheck="false" autocomplete="off">
+      <div id="pal-list"></div>
+      <div class="pal-foot muted small"><span class="kbd">↑</span><span class="kbd">↓</span> naviguer · <span class="kbd">Entrée</span> ouvrir · <span class="kbd">Échap</span> fermer</div>
+    </div>
+  </div>
+
+  <!-- ============ PANNEAU APPARENCE ============ -->
+  <div id="appearance-overlay" hidden></div>
+  <aside id="appearance" aria-hidden="true">
+    <div class="ap-head">
+      <div>
+        <h2>Apparence</h2>
+        <p class="muted small">Tout se met à jour en direct.</p>
+      </div>
+      <button class="icon-btn" data-action="close-appearance" title="Fermer">✕</button>
+    </div>
+    <div class="ap-body" id="ap-body"></div>
+  </aside>
+
+  <div id="modal-root"></div>
+  <div id="toasts"></div>
+
+  <script src="api-web.js"></script>
+  <script src="theme.js"></script>
+  <script src="app.js"></script>
+  <script src="complete.js"></script>
+  <script src="schema.js"></script>
+  <script src="triggers.js"></script>
+  <script src="procedures.js"></script>
+  <script src="relations.js"></script>
+  <script src="dictionary.js"></script>
+  <script src="views.js"></script>
+  <script src="csv.js"></script>
+  <script src="search.js"></script>
+  <script src="users.js"></script>
+  <script src="update.js"></script>
+</body>
+</html>

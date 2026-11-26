@@ -1,0 +1,98 @@
+{
+  "version": "1.0.0",
+  "date": "2026-11-26",
+  "notes": [
+    "Première version publique de BaseStudio",
+    "Bouton Mise à jour : les prochaines versions s'installent en un clic"
+  ],
+  "files": [
+    {
+      "path": "api.php",
+      "sha256": "39c26cc96fc94e49616a63e819680e2bda4ccaa9e21208e8a480c8b4c262814b"
+    },
+    {
+      "path": "api-web.js",
+      "sha256": "ea7e185b9175afeda5ca96c7f838b899c7d2482c0a9c1781cef15253db50bced"
+    },
+    {
+      "path": "app.js",
+      "sha256": "7067c8aa57113e56f42067c531488bd439c9cf76820d3a2287de26a951ad9e60"
+    },
+    {
+      "path": "basestudio.ico",
+      "sha256": "48c8b152a42c50877a24647628e579c0260becb726d16fb6d834bbc71cb80180"
+    },
+    {
+      "path": "complete.js",
+      "sha256": "1d10fe2fe12d2b019c88162c7a4a28acf515c731e8f1850ef08eb18fe3878f5f"
+    },
+    {
+      "path": "csv.js",
+      "sha256": "dc04b1e1a46e5a3508888a202d83604cc945ff63fcb5f3729867f30df3e5b1f8"
+    },
+    {
+      "path": "dictionary.js",
+      "sha256": "e5524f657f2278031cea0fa9cfe6a8d3c0418ad663c4d44f7c7e4d9429175c97"
+    },
+    {
+      "path": "index.html",
+      "sha256": "3c48c9d49d345a7ed7a12373c10f93eb2fad1abade7953ddce1a31af0889fec6"
+    },
+    {
+      "path": "index.php",
+      "sha256": "628442723505d64772eef325e5c45824923586b78c7aea9744c2a8f17c20e5d3"
+    },
+    {
+      "path": "logo.png",
+      "sha256": "26ef57acd99ba124c16136acedbd65161863fe196900154376f1eda0b7a2c18e"
+    },
+    {
+      "path": "logo.svg",
+      "sha256": "ed99cfedca997897b49ab7d35ad840dd17204a35ccedf271c70b23ef28870189"
+    },
+    {
+      "path": "procedures.js",
+      "sha256": "626e740c68b8675123c255deba597e51d00b6d0e6424971a36b4d7e76de35b8c"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4e6979ab3129c667eb108fec11b1520877a7ee5b2a0e7a5aefdfe0c6374be4c7"
+    },
+    {
+      "path": "relations.js",
+      "sha256": "d14f34a80f0258250bb9f60a3f5d56df04ea7d8d23b04e8dcf721f6da97a9056"
+    },
+    {
+      "path": "schema.js",
+      "sha256": "dcb5b9c2cd3ea98a07f4c269313d1e58274e4bd87220ba8a9e772d21f51c272d"
+    },
+    {
+      "path": "search.js",
+      "sha256": "ff8ff7c9994dddfdfab6e14b2013b26a9cf6cc1a603cfeea964e12132cd8d78a"
+    },
+    {
+      "path": "style.css",
+      "sha256": "3c44eab009335764d972539dd1d53ce68469bf85a7f39416603c44ec40f89c51"
+    },
+    {
+      "path": "theme.js",
+      "sha256": "2c1fb547e71f1ddc1847a8afa15df37b3ca90a7f6be58955d14c7dce8c5c4549"
+    },
+    {
+      "path": "triggers.js",
+      "sha256": "e23110fe192a50d0fc8bd2c2b328efa66ffb009727b78aab4511d5bb753452ea"
+    },
+    {
+      "path": "update.js",
+      "sha256": "ad2eb8502cd5873c7df92b19f13a27b2d8b46246fb111f1aec964fbf53d0a577"
+    },
+    {
+      "path": "users.js",
+      "sha256": "7d00525be12323dbd188365c39bce0f1c5e5e227e6ef40f5d8eccae017d63cec"
+    },
+    {
+      "path": "views.js",
+      "sha256": "3de7b47abd64becaf43e6aa0e2edacfd42b52ccd9d3c187a0d8346aea010b670"
+    }
+  ]
+}
