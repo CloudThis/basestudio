@@ -758,3 +758,9 @@ td.row-actions { white-space: nowrap; }
 /* sauvegardes (backups.js) */
 .bk-table td { vertical-align: middle; }
 @media (max-width: 900px) { .qb { grid-template-columns: 1fr; } .st-tile.wide { grid-column: auto; } }
+/* état du serveur : deux colonnes égales, le tableau des réglages ne déborde plus */
+.st-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: calc(var(--gap) * 1.6); align-items: start; }
+.st-split > .card { min-width: 0; }
+.st-kv { width: 100%; table-layout: fixed; }
+table.grid.st-kv td { white-space: normal; overflow: visible; text-overflow: clip; max-width: none; overflow-wrap: break-word; vertical-align: top; }
+.st-kv td:first-child { width: 42%; }

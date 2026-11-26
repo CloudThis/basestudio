@@ -1,14 +1,8 @@
 {
-    "version":  "1.1.0",
+    "version":  "1.1.1",
     "date":  "2026-11-26",
     "notes":  [
-                  "Sauvegardes automatiques (chaque lancement, jour ou semaine) et restauration en un clic",
-                  "Comparer deux bases et les rendre identiques",
-                  "Requête visuelle : construire un SELECT sans taper de SQL",
-                  "Graphiques (barres, courbe, camembert) sous chaque résultat",
-                  "Onglets et favoris dans l\u0027éditeur SQL",
-                  "Formulaire pour modifier une ligne (onglet Parcourir)",
-                  "État du serveur en direct (connexions, requêtes en cours)"
+                  "État du serveur : la carte des réglages s\u0027affiche correctement (plus de débordement)"
               ],
     "files":  [
                   {
@@ -101,11 +95,11 @@
                   },
                   {
                       "path":  "status.js",
-                      "sha256":  "b5949ca9938cec611549e5f861f047f852d0896007f3520253f44d85b920d8aa"
+                      "sha256":  "4cac8414bfce8e5598b0990d02b3cf43d41bdc9fbf41fc06266b49899b07b7af"
                   },
                   {
                       "path":  "style.css",
-                      "sha256":  "9248c796cc6c3f052534bd78b79bc60a9725b23ea339a453f4a9e9cfb412bf45"
+                      "sha256":  "8ff5349d1a134a8ab7702fc79acd313ba8d60979e421af5006b2e11ded0c6c85"
                   },
                   {
                       "path":  "theme.js",

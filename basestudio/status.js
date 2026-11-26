@@ -37,7 +37,7 @@
     history = []; prev = null;
     view.innerHTML = '<div id="st-tiles" class="st-tiles"></div>' +
       '<div class="card"><div class="card-head"><h3>⏱ Requêtes en cours</h3><label class="check small"><input type="checkbox" id="st-sleep"> montrer les connexions qui attendent</label></div><div id="st-proc"></div></div>' +
-      '<div class="sql-split"><div class="card"><div class="card-head"><h3>🗄️ Place prise par les bases</h3></div><div id="st-sizes"></div></div>' +
+      '<div class="st-split"><div class="card"><div class="card-head"><h3>🗄️ Place prise par les bases</h3></div><div id="st-sizes"></div></div>' +
       '<div class="card"><div class="card-head"><h3>⚙ Réglages du serveur</h3></div><div id="st-vars"></div></div></div>';
     const alive = () => state.tab === 'status' && !state.db && document.body.contains(view.firstChild) && $('#st-tiles', view);
 
@@ -45,7 +45,7 @@
     rows('SHOW GLOBAL VARIABLES').then(v => {
       const m = Object.fromEntries(v);
       $('#st-vars', view).innerHTML = '<table class="grid st-kv"><tbody>' + VARS.filter(x => x[0] in m).map(([k, label, f]) =>
-        '<tr><td>' + h(label) + '</td><td title="' + h(k) + '"><code>' + h(f === 'size' ? size(m[k]) : m[k] || '—') + '</code></td></tr>').join('') + '</tbody></table>';
+        '<tr><td>' + h(label) + '</td><td title="' + h(k) + '"><code>' + h(f === 'size' ? size(m[k]) : m[k] || '—').replace(/,/g, ',<wbr>') + '</code></td></tr>').join('') + '</tbody></table>';
     }).catch(e => { $('#st-vars', view).innerHTML = '<div class="alert danger">' + h(e.message) + '</div>'; });
     rows('SELECT TABLE_SCHEMA, COUNT(*), SUM(DATA_LENGTH), SUM(INDEX_LENGTH), SUM(TABLE_ROWS) FROM information_schema.TABLES GROUP BY TABLE_SCHEMA ORDER BY SUM(DATA_LENGTH + INDEX_LENGTH) DESC').then(r => {
       const max = Math.max(1, ...r.map(x => Number(x[2]) + Number(x[3])));
