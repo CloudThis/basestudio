@@ -733,7 +733,11 @@ VIEWS['table:browse'] = async view => {
     const w = whereRow(r);
     const sql = 'DELETE FROM ' + q(state.table) + ' WHERE ' + w.sql;
     if (!(await confirmBox({ title: 'Supprimer cette ligne ?', sql: preview(sql, w.vals) + ';', okText: 'Supprimer', danger: true }))) return;
-    try { await run(sql, w.vals, state.db); toast('Ligne supprimée', 'success'); render(); }
+    try {
+      await run(sql, w.vals, state.db); toast('Ligne supprimée', 'success');
+      if (window.Undo) Undo.afterDelete(state.db, state.table, cols, result.columns, r);
+      render();
+    }
     catch (e) { toast(e.message, 'error'); }
   });
 
@@ -757,6 +761,7 @@ VIEWS['table:browse'] = async view => {
       try {
         await run('UPDATE ' + q(state.table) + ' SET ' + q(col) + ' = ? WHERE ' + w.sql, [val, ...w.vals], state.db);
         toast('Modifié', 'success');
+        if (window.Undo) Undo.afterUpdate(state.db, state.table, pk, result.columns, r, { [col]: val });
         render();
       } catch (err) { toast(err.message, 'error'); }
     };
@@ -1007,6 +1012,8 @@ VIEWS['sql'] = async view => {
   const exec = async () => {
     const sql = editor.getRunnable().trim();
     if (!sql) return;
+    // garde-fou (sqlguard.js) : DELETE / UPDATE sans WHERE, DROP, TRUNCATE…
+    if (window.SqlGuard && !(await SqlGuard.check(sql, state.db))) return;
     const out = $('#sql-results', view);
     out.innerHTML = '<div class="empty">⏳ Exécution…</div>';
     // historique
@@ -1083,7 +1090,8 @@ VIEWS['import'] = async view => {
     '<button class="btn primary big" id="im-ok">📁 Choisir un fichier et l\'importer</button>' +
     '<div id="im-result" style="margin-top:14px"></div></div>';
 
-  $('#im-ok', view).onclick = async () => {
+  // file = un fichier lâché sur la fenêtre (dropfile.js) ; sinon on ouvre le sélecteur
+  const start = async file => {
     const out = $('#im-result', view);
     out.innerHTML = '<div class="muted">⏳ Lecture du fichier…</div>';
     const t0 = Date.now();
@@ -1091,7 +1099,7 @@ VIEWS['import'] = async view => {
       const pct = total ? Math.round(done * 100 / total) : 0;
       out.innerHTML = '<div class="muted">⏳ Import en cours : ' + fmtNum(done) + ' / ' + fmtNum(total) + ' requêtes (' + pct + ' %)</div>' +
         '<div class="progress"><div style="width:' + pct + '%"></div></div>';
-    });
+    }, file);
     if (!res.ok) {
       const f = res.failed;
       out.innerHTML = '<div class="alert danger"><strong>Erreur pendant l\'import' + (f ? ' (requête ' + fmtNum(f.index) + ' sur ' + fmtNum(f.total) + ')' : '') + ' :</strong>\n' + h(res.error) +
@@ -1107,6 +1115,10 @@ VIEWS['import'] = async view => {
     state.tables = {};
     await loadTree();
   };
+  $('#im-ok', view).onclick = () => start(null);
+  view.importFile = start;
+  // un fichier lâché sur la fenêtre attend d'être importé
+  if (state.pendingSql) { const f = state.pendingSql; state.pendingSql = null; start(f); }
 };
 
 // ======== OPÉRATIONS sur une base ========

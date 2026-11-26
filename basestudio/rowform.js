@@ -106,20 +106,25 @@
         });
         $('[data-ok]', back).onclick = async () => {
           const u = update(); if (!u) return;
-          try { await run(u.sql, u.vals, db); after('Ligne enregistrée', ri); }
+          const ch = Object.fromEntries(changes().map(x => [x[0], x[1]]));
+          try { await run(u.sql, u.vals, db); if (window.Undo) Undo.afterUpdate(db, table, pk, result.columns, r, ch); after('Ligne enregistrée', ri); }
           catch (e) { toast(e.message, 'error'); }
         };
         $('[data-dup]', back).onclick = async () => {
           // copie sans la clé auto-incrémentée (MySQL en donne une nouvelle)
           const keep = result.columns.map((c, i) => [c, value(i)]).filter(([c]) => !/auto_increment/i.test(info(c).extra));
           const sql = 'INSERT INTO ' + q(table) + ' (' + keep.map(x => q(x[0])).join(', ') + ') VALUES (' + keep.map(() => '?').join(', ') + ')';
-          try { const d = await run(sql, keep.map(x => x[1]), db); after('Ligne dupliquée' + (d.results[0].insertId ? ' (id ' + d.results[0].insertId + ')' : '')); }
+          try {
+            const d = await run(sql, keep.map(x => x[1]), db);
+            const auto = cols.find(c => /auto_increment/i.test(c.extra));
+            if (window.Undo && auto) Undo.afterInsert(db, table, auto.name, d.results[0].insertId);
+            after('Ligne dupliquée' + (d.results[0].insertId ? ' (id ' + d.results[0].insertId + ')' : '')); }
           catch (e) { toast(e.message, 'error'); }
         };
         $('[data-del]', back).onclick = async () => {
           const w = whereRow(r), sql = 'DELETE FROM ' + q(table) + ' WHERE ' + w.sql;
           if (!(await confirmBox({ title: 'Supprimer cette ligne ?', sql: preview(sql, w.vals) + ';', okText: 'Supprimer', danger: true }))) return;
-          try { await run(sql, w.vals, db); after('Ligne supprimée'); }
+          try { await run(sql, w.vals, db); if (window.Undo) Undo.afterDelete(db, table, cols, result.columns, r); after('Ligne supprimée'); }
           catch (e) { toast(e.message, 'error'); }
         };
       });

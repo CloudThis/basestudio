@@ -1,8 +1,11 @@
 {
-    "version":  "1.1.1",
+    "version":  "1.2.0",
     "date":  "2026-11-26",
     "notes":  [
-                  "État du serveur : la carte des réglages s\u0027affiche correctement (plus de débordement)"
+                  "Glisser-déposer un fichier .sql ou .csv sur la fenêtre pour l\u0027importer",
+                  "Bouton « ↩ Annuler » (ou Ctrl+Z) après une modification ou une suppression de ligne",
+                  "Garde-fou : confirmation avant un DELETE / UPDATE sans WHERE, un TRUNCATE ou un DROP",
+                  "« ✨ Mettre en forme » le SQL (Ctrl+Maj+F)"
               ],
     "files":  [
                   {
@@ -11,11 +14,11 @@
                   },
                   {
                       "path":  "api-web.js",
-                      "sha256":  "40f19185bdba3f75370dd6cb43a447e4d881a7fc1120b0a06a8559b8981edfdd"
+                      "sha256":  "a3b1eaa330ff5052913d31c404d739f779ac17ed859f4e42b11da3c99f5bcb2d"
                   },
                   {
                       "path":  "app.js",
-                      "sha256":  "3d6b05e959eb2132df7f5321fa07fc4de651714f5516b6feb43a31ccb830d6f6"
+                      "sha256":  "e8af951d7ecc7510f3cc3cd61f0eb5b867bef7d865feac46e6d85e105c61f3e7"
                   },
                   {
                       "path":  "backups.js",
@@ -43,15 +46,19 @@
                   },
                   {
                       "path":  "csv.js",
-                      "sha256":  "dc04b1e1a46e5a3508888a202d83604cc945ff63fcb5f3729867f30df3e5b1f8"
+                      "sha256":  "6131eabbaea541b0c16a65044bb4dec996ecfa22c00ba8b39c357ae70a778c85"
                   },
                   {
                       "path":  "dictionary.js",
                       "sha256":  "e5524f657f2278031cea0fa9cfe6a8d3c0418ad663c4d44f7c7e4d9429175c97"
                   },
                   {
+                      "path":  "dropfile.js",
+                      "sha256":  "82946f55b2685483357ac59968997a98a66b1f755ac4b582dc2a94dbdd058777"
+                  },
+                  {
                       "path":  "index.html",
-                      "sha256":  "b48f5eedb06ae2e6f8cf4e41de8da3e0f1afcb47eddd387063066b2e15f717da"
+                      "sha256":  "edc404d0cd09cb9f1f297ac5f4d43e6343408842ec2bfc014c841a81abccc0be"
                   },
                   {
                       "path":  "index.php",
@@ -71,7 +78,7 @@
                   },
                   {
                       "path":  "README.md",
-                      "sha256":  "87ff8352ce4585bfd021a7c9f47aca6f339c28cfa0cc971140f7853412eb996c"
+                      "sha256":  "a7c3e97a522e66dd18d410a84477e20ead019f90f2a2257678726c6d08e443a2"
                   },
                   {
                       "path":  "relations.js",
@@ -79,7 +86,7 @@
                   },
                   {
                       "path":  "rowform.js",
-                      "sha256":  "3014f67da6fc714ebafe9ff319bb37184af3dbb87343e1802200603f0e3edf36"
+                      "sha256":  "8105a484efbc622be8f0c62a8fafc31be45ee78d64f339589142ea2e2309419e"
                   },
                   {
                       "path":  "schema.js",
@@ -88,6 +95,14 @@
                   {
                       "path":  "search.js",
                       "sha256":  "ff8ff7c9994dddfdfab6e14b2013b26a9cf6cc1a603cfeea964e12132cd8d78a"
+                  },
+                  {
+                      "path":  "sqlformat.js",
+                      "sha256":  "af4cef8cce25992b646bbc8c94d63701baced7062f722655c253f388a15e8b6b"
+                  },
+                  {
+                      "path":  "sqlguard.js",
+                      "sha256":  "3f837f55fa555876388bd5d39c05765e515e8a51d7f019c79a97e8a3ef5d7ad6"
                   },
                   {
                       "path":  "sqltabs.js",
@@ -99,7 +114,7 @@
                   },
                   {
                       "path":  "style.css",
-                      "sha256":  "8ff5349d1a134a8ab7702fc79acd313ba8d60979e421af5006b2e11ded0c6c85"
+                      "sha256":  "56dcd74d4dccc6a736656d6adbadbcc9024f68262812eca5042a6da5d673f9a7"
                   },
                   {
                       "path":  "theme.js",
@@ -108,6 +123,10 @@
                   {
                       "path":  "triggers.js",
                       "sha256":  "e23110fe192a50d0fc8bd2c2b328efa66ffb009727b78aab4511d5bb753452ea"
+                  },
+                  {
+                      "path":  "undo.js",
+                      "sha256":  "5029938eaf3fd32e1139d10894ef743e2bb34408f721cfea63ea73271b6d91f3"
                   },
                   {
                       "path":  "update.js",

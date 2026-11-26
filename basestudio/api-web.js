@@ -182,8 +182,9 @@
     },
 
     // onProgress(faites, total) est appelé pendant l'import
-    importSql: async (database, onProgress) => {
-      const f = await pickText('.sql,.txt');
+    // file : un fichier déjà choisi (glisser-déposer) ; sinon on ouvre le sélecteur
+    importSql: async (database, onProgress, file) => {
+      const f = file ? { name: file.name, text: await file.text() } : await pickText('.sql,.txt');
       if (!f) return { ok: true, data: null };
       return importText(database || null, f.name, f.text, onProgress);
     },

@@ -10,6 +10,7 @@ Un gestionnaire de bases MySQL / MariaDB (comme phpMyAdmin) pour Windows + XAMPP
 - **Utilisateurs et droits**, **dictionnaire de données** (PDF)
 - **Requête visuelle** (sans taper de SQL), **graphiques**, onglets et **favoris** SQL, formulaire d'édition d'une ligne
 - **Sauvegardes automatiques**, **comparer deux bases**, **état du serveur** en direct
+- **Glisser-déposer** d'un `.sql` / `.csv`, **↩ Annuler** une modif, **garde-fou** contre les DELETE sans WHERE, **mise en forme** du SQL
 - Thèmes, polices, couleurs, fond d'écran, CSS personnalisé
 
 ## Installer

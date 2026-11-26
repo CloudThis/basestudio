@@ -211,13 +211,10 @@
     $('#cv-head', view).onchange = () => file && parse(true);
     $('#cv-enc', view).onchange = () => file && load(false);
 
-    // glisser-déposer : on peut aussi lâcher le fichier sur la page
-    view.addEventListener('dragover', e => e.preventDefault());
-    view.addEventListener('drop', e => {
-      e.preventDefault();
-      const f = e.dataTransfer.files[0];
-      if (f) { file = f; $('#cv-enc', view).value = 'utf-8'; load(true); }
-    });
+    // glisser-déposer : dropfile.js appelle view.csvFile(fichier)
+    // (pas d'écouteur sur #view : cet élément sert à tous les onglets)
+    view.csvFile = f => { file = f; $('#cv-enc', view).value = 'utf-8'; load(true); };
+    if (state.pendingCsv) { const f = state.pendingCsv; state.pendingCsv = null; view.csvFile(f); }
   };
 
   // Dans l'onglet « Importer » d'une base : on indique où importer un CSV

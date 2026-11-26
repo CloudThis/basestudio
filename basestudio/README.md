@@ -46,6 +46,10 @@ Quand une nouvelle version est publiée, un bouton **⬆ Mise à jour** apparaî
 - **📊 Graphique** : sous chaque résultat (éditeur SQL, requête visuelle), en barres, courbe ou camembert, avec export PNG / SVG. Astuce : `SELECT ville, COUNT(*) FROM client GROUP BY ville`.
 - **✏ Formulaire d'une ligne** (onglet Parcourir) : le crayon au début de chaque ligne ouvre toutes les colonnes l'une sous l'autre (listes pour les ENUM et les clés étrangères). Enregistrer, ‹ › ligne précédente / suivante, ⧉ Dupliquer, 🗑 Supprimer.
 - **💾 Sauvegardes** et **📊 État du serveur** (menu du haut) : voir plus bas.
+- **Glisser-déposer** : lâche un fichier `.sql` sur la fenêtre pour l'importer dans la base ouverte (ou sur le serveur), ou un `.csv` pour l'importer dans la table ouverte (sinon BaseStudio te demande laquelle).
+- **↩ Annuler** : après une modification ou une suppression de ligne (Parcourir ou formulaire), une barre « ↩ Annuler » reste 20 secondes en bas. Un clic, ou **Ctrl+Z** (hors d'un champ de texte), remet l'ancienne valeur ou la ligne supprimée.
+- **Garde-fou** : avant d'exécuter un `DELETE` ou un `UPDATE` sans `WHERE`, un `TRUNCATE`, un `DROP` (base, table, vue, colonne), l'éditeur SQL explique ce qui va être effacé et demande de confirmer.
+- **✨ Mettre en forme** (éditeur SQL, ou **Ctrl+Maj+F**) : remet une requête au propre (mots-clés en majuscules, une clause par ligne, sous-requêtes décalées). Seulement la sélection si du texte est sélectionné.
 - **Journal SQL** (bouton 📜 en bas à gauche) : toutes les requêtes que l'appli a envoyées. Clique sur une ligne pour la rouvrir dans l'éditeur.
 
 ## Le schéma MERISE (onglet 🔗 Schéma d'une base)
@@ -181,6 +185,10 @@ Actualisé toutes les 3 secondes : depuis quand MySQL tourne, connexions, **requ
 | `compare.js` | La comparaison de deux bases. |
 | `backups.js` | Les sauvegardes (manuelles et automatiques). |
 | `status.js` | L'état du serveur. |
+| `dropfile.js` | Le glisser-déposer d'un fichier .sql / .csv. |
+| `undo.js` | La barre « ↩ Annuler ». |
+| `sqlguard.js` | Le garde-fou de l'éditeur SQL. |
+| `sqlformat.js` | La mise en forme du SQL. |
 
 Tu peux modifier ces fichiers directement dans `C:\xampp\htdocs\basestudio\`, puis recharger la page (F5). Pour ajouter un thème prêt, ajoute une entrée dans `PRESETS` au début de `theme.js`. Attention : une mise à jour remplace ces fichiers (ta version est gardée dans `_sauvegarde\`).
 
