@@ -24,6 +24,9 @@ Tes potes téléchargent BaseStudio sur https://github.com/CloudThis/basestudio 
 
 Quand une nouvelle version est publiée, un bouton **⬆ Mise à jour** apparaît dans l'appli (en haut à droite et sur l'écran de connexion). Un clic montre les nouveautés, **Installer** télécharge les nouveaux fichiers, vérifie chacun (empreinte SHA-256) et garde l'ancienne version dans `_sauvegarde/`. Les bases, thèmes et réglages ne sont pas touchés. **Ctrl+K** puis « Vérifier les mises à jour » pour vérifier à la main.
 
+- **Quoi de neuf** : au premier lancement après une mise à jour, une fenêtre montre les nouveautés. Pour la revoir : clique sur le numéro de version (en bas de l'écran de connexion) ou **Ctrl+K** puis « À propos ».
+- **Revenir à la version précédente** : dans « À propos » (ou **Ctrl+K** puis « Revenir à la version précédente »). Les deux versions sont échangées : celle que tu quittes est gardée, et le bouton « ⬆ Mise à jour » te la reproposera.
+
 ## Ce que tu peux faire
 
 - **Accueil** : tes bases en tuiles colorées (chaque base a sa couleur). Tu peux en créer et en supprimer.

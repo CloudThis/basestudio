@@ -1219,6 +1219,8 @@ function drawPalette(keepScroll) {
    ['📥', 'Importer un fichier SQL', () => { state.tab = 'import'; render(); }],
    ['👤', 'Utilisateurs et droits', () => go(null, null, 'users')],
    ['⬆', 'Vérifier les mises à jour', () => window.Updater && Updater.check(true)],
+   ['ℹ️', 'À propos de BaseStudio : version et nouveautés', () => window.Updater && Updater.about(false)],
+   ['↩', 'Revenir à la version précédente', () => window.Updater && Updater.rollback()],
    ['🎨', 'Apparence', () => Theme.open()],
    ['⏻', 'Se déconnecter', () => disconnect()]
   ].forEach(([ico, label, run]) => { if (match(label)) items.push({ group: 'Actions', ico, label, sub: '', run }); });

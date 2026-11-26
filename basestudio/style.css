@@ -688,3 +688,5 @@ mark { background: color-mix(in srgb, var(--warning) 45%, transparent); color: i
 /* barre de progression (import) */
 .progress { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 8px; }
 .progress > div { height: 100%; background: var(--accent); transition: width .2s; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--muted); cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.link-btn:hover { color: var(--accent); }

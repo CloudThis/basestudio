@@ -191,6 +191,8 @@
     // mises à jour depuis GitHub (voir update.js)
     updateCheck: () => call('update_check'),
     updateInstall: ref => call('update_install', { ref }),
+    updateBackup: () => call('update_backup'),
+    updateRollback: () => call('update_rollback'),
 
     saveFile: async (name, content) => ({ ok: true, data: 'Téléchargements\\' + download(name, content) }),
     openFile: async () => ({ ok: true, data: null })

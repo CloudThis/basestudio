@@ -72,13 +72,73 @@
       });
   }
 
+  // ---------- « À propos » : version, nouveautés, mises à jour, retour arrière ----------
+  async function localInfo() {
+    try { const j = await (await fetch('version.json', { cache: 'no-store' })).json(); return { version: j.version || '?', date: j.date || '', notes: (j.notes || []).filter(n => typeof n === 'string') }; }
+    catch (e) { return { version: '?', date: '', notes: [] }; }
+  }
+  const notesHtml = notes => notes.length ? '<div class="upd-notes"><b>Nouveautés de cette version</b><ul>' + notes.map(n => '<li>' + h(n) + '</li>').join('') + '</ul></div>'
+    : '<p class="muted">Pas de nouveautés notées pour cette version.</p>';
+
+  async function about(intro) {
+    const me = await localInfo();
+    const bak = window.api && window.api.updateBackup ? await window.api.updateBackup() : null;
+    const prev = bak && bak.ok && bak.data ? bak.data : null;
+    modal('<h3>' + (intro ? '🎉 Quoi de neuf dans BaseStudio ' + h(me.version) : 'ℹ️ BaseStudio ' + h(me.version)) + '</h3>' +
+      (intro ? '<p>La mise à jour est installée. Voici ce qui change :</p>' : '<p class="muted small">Version ' + h(me.version) + (me.date ? ' du ' + h(new Date(me.date).toLocaleDateString('fr-FR')) : '') + '</p>') +
+      notesHtml(me.notes) +
+      (prev ? '<p class="muted small">Un souci avec cette version ? La version <b>' + h(prev.version) + '</b> est gardée sur ce PC : tu peux y revenir.</p>' : '') +
+      '<div class="modal-actions">' +
+      (prev ? '<button class="btn ghost" data-back>↩ Revenir à la version ' + h(prev.version) + '</button>' : '') +
+      (intro ? '' : '<button class="btn" data-check>🔄 Vérifier les mises à jour</button>') +
+      '<button class="btn primary" data-x>' + (intro ? 'Super !' : 'Fermer') + '</button></div>',
+      (back, close) => {
+        $('[data-x]', back).onclick = close;
+        const c = $('[data-check]', back); if (c) c.onclick = () => { close(); check(true); };
+        const b = $('[data-back]', back); if (b) b.onclick = () => { close(); rollback(prev.version); };
+      });
+  }
+
+  async function rollback(prevVersion) {
+    if (!window.api || !window.api.updateRollback) return;
+    if (!prevVersion) {
+      const bak = await window.api.updateBackup();
+      prevVersion = bak.ok && bak.data ? bak.data.version : null;
+      if (!prevVersion) return toast('Aucune version précédente n\'est gardée sur ce PC.', 'error');
+    }
+    const cur = await localVersion();
+    if (!(await confirmBox({ title: 'Revenir à la version ' + prevVersion + ' ?',
+      text: 'BaseStudio ' + h(cur) + ' sera remplacé par la version ' + h(prevVersion) + '. Tes bases, thèmes et réglages ne sont pas touchés.<br>' +
+        'La version ' + h(cur) + ' reste gardée : le bouton « ⬆ Mise à jour » te la reproposera.', okText: '↩ Revenir à ' + prevVersion }))) return;
+    const res = await window.api.updateRollback();
+    if (!res.ok) return toast(res.error, 'error');
+    localStorage.removeItem(MEMO);
+    localStorage.setItem(SEEN, res.data.version);   // pas de « Quoi de neuf » pour un retour en arrière
+    toast('Retour à la version ' + res.data.version + '. Redémarrage…', 'success');
+    setTimeout(() => location.reload(), 1200);
+  }
+
+  // Premier lancement après une mise à jour : on montre les nouveautés une fois
+  const SEEN = 'bs.seenVersion';
+  async function whatsNew() {
+    const v = await localVersion();
+    if (v === '?') return;
+    const seen = localStorage.getItem(SEEN);
+    localStorage.setItem(SEEN, v);
+    if (seen && seen !== v && !$('.modal')) about(true);
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     const v = await localVersion();
-    $$('.app-version').forEach(el => el.textContent = 'v' + v);
-    document.addEventListener('click', e => { if (e.target.closest('.update-btn')) open(); });
+    $$('.app-version').forEach(el => { el.textContent = 'v' + v; el.title = 'Version, nouveautés, mises à jour'; });
+    document.addEventListener('click', e => {
+      if (e.target.closest('.update-btn')) open();
+      else if (e.target.closest('.app-version')) about(false);
+    });
+    setTimeout(whatsNew, 600);
     setTimeout(() => check(false), 2500);
     setInterval(() => check(false), EVERY);
   });
 
-  window.Updater = { check, open };
+  window.Updater = { check, open, about, rollback };
 })();

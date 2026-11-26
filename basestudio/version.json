@@ -1,23 +1,22 @@
 {
-    "version":  "1.0.1",
+    "version":  "1.0.2",
     "date":  "2026-11-26",
     "notes":  [
-                  "Sécurité : le mot de passe MySQL n\u0027est plus jamais enregistré en clair (les anciens sont effacés automatiquement)",
-                  "Import des gros fichiers .sql : envoi par paquets avec barre de progression",
-                  "Documentation mise à jour"
+                  "Fenêtre Quoi de neuf : les nouveautés s\u0027affichent après chaque mise à jour (clic sur le numéro de version pour les revoir)",
+                  "Revenir à la version précédente en un clic si une mise à jour pose problème"
               ],
     "files":  [
                   {
                       "path":  "api.php",
-                      "sha256":  "c76a41b33cf0e993adf014e0f8867eeed4e2665a9185ec8af6d4af1ea0847c1d"
+                      "sha256":  "faaaeb8051cac50d886da9d0e2f701a4b661b0de0e012ba8a9e976c878fa514d"
                   },
                   {
                       "path":  "api-web.js",
-                      "sha256":  "468101e49fa0d0051895e900faad3dc777b6ade82a04b06c1dcdd8cabe15f520"
+                      "sha256":  "8aa61dacb40583339ea4638b092bde1004c9ce118ede5644023dc026f543e7bf"
                   },
                   {
                       "path":  "app.js",
-                      "sha256":  "c962b99ad8add0ce42e440e929dbe59335b447fcd78df79d8c5ec31b3b249f3e"
+                      "sha256":  "ef50e4d91487d39a445bef494a9e31a36169b769af815a3484d2f6ee9610352c"
                   },
                   {
                       "path":  "basestudio.ico",
@@ -37,7 +36,7 @@
                   },
                   {
                       "path":  "index.html",
-                      "sha256":  "3ef70e0d0c851ef4826c5ec60a49edb1974d7ba05001f4fd25a3ad11a8af1100"
+                      "sha256":  "9350942e4eff7280cd7e99d81add1c50697a60bd3b9f4254e99aba1de3f5ebec"
                   },
                   {
                       "path":  "index.php",
@@ -57,7 +56,7 @@
                   },
                   {
                       "path":  "README.md",
-                      "sha256":  "3a11aa94a7481fe652fd1511e64901c34a365ee27168cea2d2835daf35ee5eb9"
+                      "sha256":  "cdff6569bedc94be4578b46f1d4027dd068782c9b8a33c187acc9c26810b8b12"
                   },
                   {
                       "path":  "relations.js",
@@ -73,7 +72,7 @@
                   },
                   {
                       "path":  "style.css",
-                      "sha256":  "946c7d9e0179fa9c08e18570c747a722ffda15145915aff58208b6be93d00c15"
+                      "sha256":  "93b9bdb7d41d107c788e72b44cf9b573ecfb1fb4d4b4772adf5dff392fa925e2"
                   },
                   {
                       "path":  "theme.js",
@@ -85,7 +84,7 @@
                   },
                   {
                       "path":  "update.js",
-                      "sha256":  "ad2eb8502cd5873c7df92b19f13a27b2d8b46246fb111f1aec964fbf53d0a577"
+                      "sha256":  "fac5205e70c8b579bf9dd3ec8336c505eb202fb196c19d6d729c308f627a80e3"
                   },
                   {
                       "path":  "users.js",

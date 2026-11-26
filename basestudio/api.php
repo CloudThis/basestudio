@@ -204,6 +204,32 @@ try {
         }
 
         // Télécharge la nouvelle version, vérifie chaque fichier, sauvegarde l'ancienne, puis remplace
+        // Quelle version est gardée dans _sauvegarde/ ? (null s'il n'y en a pas)
+        case 'update_backup': {
+            $v = json_decode((string)@file_get_contents(__DIR__ . '/_sauvegarde/version.json'), true);
+            reply(is_array($v) && !empty($v['version']) ? ['version' => $v['version'], 'date' => $v['date'] ?? ''] : null);
+        }
+
+        // Revenir à la version gardée dans _sauvegarde/. On ÉCHANGE : la version
+        // qu'on quitte devient la sauvegarde, pour pouvoir y revenir ensuite.
+        case 'update_rollback': {
+            $bak = __DIR__ . '/_sauvegarde';
+            $names = array_values(array_filter(scandir($bak) ?: [], fn($e) => is_file("$bak/$e") && preg_match('/^[A-Za-z0-9_.-]+$/', $e)));
+            if (!in_array('version.json', $names, true)) fail('Aucune version précédente n\'est gardée sur ce PC.');
+            $old = []; foreach ($names as $e) $old[$e] = file_get_contents("$bak/$e");
+            $cur = []; foreach (scandir(__DIR__) as $e) if (is_file(__DIR__ . "/$e")) $cur[$e] = file_get_contents(__DIR__ . "/$e");
+            foreach ($old as $e => $data) {
+                if (@file_put_contents(__DIR__ . "/$e", $data) === false) {
+                    foreach ($cur as $k => $d) @file_put_contents(__DIR__ . "/$k", $d);   // on remet tout comme avant
+                    fail("Impossible d'écrire $e (droits du dossier ?). Rien n'a changé.");
+                }
+            }
+            foreach (glob($bak . '/*') ?: [] as $f) if (is_file($f)) @unlink($f);
+            foreach ($cur as $e => $d) @file_put_contents("$bak/$e", $d);
+            $v = json_decode($old['version.json'], true);
+            reply(['version' => $v['version'] ?? '?']);
+        }
+
         case 'update_install': {
             $ref = (string)($in['ref'] ?? 'main');
             if (!valid_ref($ref)) fail('Version demandée invalide.');

@@ -26,6 +26,6 @@ Un gestionnaire de bases MySQL / MariaDB (comme phpMyAdmin) pour Windows + XAMPP
 
 ## Mises à jour
 
-Quand une nouvelle version est publiée, un bouton **⬆ Mise à jour** apparaît dans l'appli (en haut à droite et sur l'écran de connexion). Un clic montre les nouveautés, puis **Installer** fait tout : tes bases, tes thèmes et tes réglages ne sont pas touchés. Pour vérifier à la main : **Ctrl+K** puis « Vérifier les mises à jour ».
+Quand une nouvelle version est publiée, un bouton **⬆ Mise à jour** apparaît dans l'appli (en haut à droite et sur l'écran de connexion). Un clic montre les nouveautés, puis **Installer** fait tout : tes bases, tes thèmes et tes réglages ne sont pas touchés. Pour vérifier à la main : **Ctrl+K** puis « Vérifier les mises à jour ». Après une mise à jour, une fenêtre « Quoi de neuf » montre les nouveautés, et si la nouvelle version pose problème, tu peux revenir à la précédente (clic sur le numéro de version > « Revenir à la version … »).
 
 Le détail de toutes les fonctions est dans [`basestudio/README.md`](basestudio/README.md).
